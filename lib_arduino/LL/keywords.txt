@@ -1,0 +1,2 @@
+LL	KEYWORD1
+getNextCommand	KEYWORD2
