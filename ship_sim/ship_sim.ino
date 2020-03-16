@@ -9,7 +9,7 @@
 
 #define BAUDRATE 115200
 #define SAMPLING_PERIOD 10000 // 5000 us = 200 Hz
-#define I2CADDR 1
+#define I2CADDR 9 // this is the I2C slave
 
 #define N_STATEVARS 2    /* number of state variables */
 #define N_INPUTS    2    /* number of input variables */
@@ -17,7 +17,7 @@
 /* System specific parameters */
 #define K         1.4067          /* K = g*d - G*h [Nm] - see accompanying document */
 #define l         0.15            /* length of the arm [m] */
-#define g         0.2             /* mass mounted at the end of the arm [kg] */
+#define g         2.0             /* mass mounted at the end of the arm [kg] */
 #define C         0.0619          /* damping coefficient of the water [N*s/m] */
 #define Ixx       0.1748          /* moment of inertia around X-axis [kg*m^2] */
 #define PHI_MIN   -1.57           /* minimum input angle that can be applied */
@@ -70,9 +70,9 @@ void loop() {
   delay(50);
   
   counter++;
-  if (counter == 1000) {
+  if (counter == 100) {
     counter = 0;
-    init(state_vars);
+    //init(state_vars);
   }
 }
 
@@ -81,7 +81,7 @@ void loop() {
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void send_measurement() {
-  write_i2c( theta + NOISE_VAR*random(-1, 1));
+  write_i2c( theta );// + NOISE_VAR*random(-1, 1));
 }
 
 
@@ -126,11 +126,11 @@ void set_disturbance(float *T)
 void set_command(float *phi)
 {
   char *bb_phi = (char *)phi;
-  // read in ul
+  // read in phi
   for(int i=0; i<4; i++) {
     bb_phi[i] = Wire.read(); // receive a byte as character
   }
-  *phi = constrain(*phi, PHI_MIN, PHI_MAX);
+  *phi = constrain(*phi, PHI_MIN, PHI_MAX);  
 }
 
 void write_i2c(float val)
@@ -144,6 +144,7 @@ void write_i2c(float val)
 /* function called on timer interrupt */
 void next_step()
 {
+  
   one_step(state_vars, inputs);
   constraints(state_vars);
   
@@ -155,7 +156,7 @@ void next_step()
 /* init: initializes the state vars */
 void init(float *state_vars)
 {
-    state_vars[0] = -0.4;
+    state_vars[0] =  0.4;
     state_vars[1] =  0.1;
 
 }
@@ -213,7 +214,7 @@ void deriv(float *state_vars, float *state_vars_dot, float *inputs)
     float omega  = state_vars[1];
     
     state_vars_dot[0] = omega;                                                        // theta_dot = omega
-    state_vars_dot[1] = 1/Ixx * (K*sin(theta) + g*l*sin(phi)*cos(theta) - C*omega);    // omega_dot 
+    state_vars_dot[1] = 1/Ixx * (-K*sin(theta) + g*l*sin(phi)*cos(theta) - C*omega);    // omega_dot 
     
 }
 

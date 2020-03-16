@@ -11,11 +11,12 @@ params = {'bus_name': '/dev/ttyUSB0',
           'baudrate': 115200,
           'L': 1.0,
           'sampling_period': 10, # in milliseconds
+          'vars':   ['theta', 'omega', 'phi']
           }
 
 class ShipGraph:
     """
-        Shows the movement of the ship
+    Shows the movement of the ship
     """
 
     def __init__(self, params):
@@ -48,7 +49,7 @@ class ShipGraph:
             x = self.ser.readline()
             print(x)
             x = x.rsplit()
-            if len(x) > 4: # avoids measuring theta too early
+            if len(x) >= len(params['vars']): # avoids measuring theta too early
                 break
         try:
             theta = float(x[0])

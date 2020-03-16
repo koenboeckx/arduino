@@ -15,7 +15,7 @@ params = {'bus_name': '/dev/ttyUSB0',
 
 class QuadcopterGraph:
     """
-        Shows the movement of the pendulum
+    Shows the movement of the pendulum
     """
 
     def __init__(self, params):
