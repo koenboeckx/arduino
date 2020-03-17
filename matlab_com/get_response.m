@@ -1,4 +1,4 @@
-function Y=get_response(arduino,w, readInPieces)
+function Y = get_response(arduino,w, readInPieces)
 %arduino: a structure containing the com object and other response parameters created by init_serial
 %w (float): the set point to be send to the arduino
 %Y : float array returned by the arduino. Size defined in init_serial.
@@ -12,7 +12,8 @@ if arduino.downsample>255
 end
 
 set(arduino.com,'BaudRate',arduino.BaudRateTX);
-mode=255;%to trigger a response 
+mode = 255;%to trigger a response 
+
 fwrite(arduino.com,mode,'uint32');
 fwrite(arduino.com,arduino.n_period,'uint32');
 fwrite(arduino.com,arduino.n_period_before,'uint32');

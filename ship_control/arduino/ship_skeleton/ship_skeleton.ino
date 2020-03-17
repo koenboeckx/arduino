@@ -1,4 +1,4 @@
-#include "lib_el009.h"
+#include "utilities.h"
 #include "TimerOne.h"
 #include <Wire.h>
 
@@ -10,24 +10,22 @@
 #define DISTURBANCE   2    /* apply disturbance to system */
 #define STATE         3    /* set the initial value of the system */
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 //controller modes (requested by matlab and passed to my_callback) 
-#define  OPEN_LOOP    0
-#define  CLASSICAL    1//classical (PID family) current controller
-#define  STATE_SPACE  2
+#define OPEN_LOOP             0
+#define CLASSICAL             1
+#define STATE_SPACE           2
+#define PROPORTIONAL          3
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 float theta; // measurement coming from simulator
 
 float my_param;//set by set_mode_param. Can be used in controller if needed.
 
-void get_measurement(float *value)
+void get_measurement(float *theta)
 {
   Wire.requestFrom(I2CSLAVE, 4);
-  byte *bb = (byte *)value;
-  int i = 0;
-  while(Wire.available()){    // slave may send less than requested
-   bb[i] = Wire.read(); // receive a byte as character  
-   i++;
-  }
+  *theta = read_i2c();
 }
 
 void set_phi(float phi)
@@ -38,13 +36,7 @@ void set_phi(float phi)
   Wire.endTransmission();
 }
 
-void write_i2c(float val)
-{
-  byte* b = (byte *)&val;
-  Wire.write(b,4);
-}
-
-int set_mode_param(byte mode,int n_param,float *buf)
+int set_mode_params(byte mode,int n_param,float *buf)
 //This function is called when matlab calls set_mode_param
 //Set parameters sent by matlab if needed. Else just return 0.
 //return 0 if no error
@@ -66,21 +58,18 @@ switch (mode) {
 
 void setup()
 {
-  el009_setup(T_SAMPLE);
-  Wire.begin(); // join i2c bus as master
-  Serial.println("..... ok .....");
+  common_setup(T_SAMPLE);
 }
 
 
-void my_callback(float w,byte write_serial,byte mode)
+void my_callback(float w, byte write_serial, byte mode)
 {
   float   sin_phi = 0.0;
   float   phi     = 0.0;
-  float   K = 0.;
+  float   K       = 0.;
   //----------read measurements----------
   get_measurement(&theta);
   //----------compute command-----------------
-  mode=CLASSICAL;
    switch (mode) {
     case OPEN_LOOP:
       sin_phi = w;
@@ -95,25 +84,23 @@ void my_callback(float w,byte write_serial,byte mode)
     default : 
       sin_phi=0;  
   }
-  phi = asin(sin_phi);
-  phi = 0.0;
+  //phi = asin(sin_phi);
+  phi = sin_phi;
   
   //------------issue command----------------
    set_phi(phi);
    //----------write measurements on the serial port----------
    //measurements can be read in matlab using get_response.m
    //you can chose the data to send (Max 3 values at 0.5kHz)
-   if (write_serial)
-   //write measurements you need in matlab.
+   if (write_serial) //write measurements you need in matlab.
    {
-     float_write_serial(w);
-     float_write_serial(phi);
-     float_write_serial(theta);
+     write_serial_float(w);
+     write_serial_float(phi);
+     write_serial_float(theta);
    }
 }
 
-
 void loop()
 {
- el009_loop();
+  communication_loop();
 }

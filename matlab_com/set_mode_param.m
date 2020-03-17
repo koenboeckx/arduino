@@ -7,7 +7,8 @@ function err=set_mode_param(arduino,mode,w0,params)
 %        if params=[], the function set_mode_param is not called on the arduino. Only set the mode and w0, keeping the existing parameters
 params=params(:);
 n_param=length(params);
-%disp('set_mode_param: Writing to serial port');
+
+disp('set_mode_param: Writing to serial port');
 fwrite(arduino.com,mode,'uint32');
 fwrite(arduino.com,w0,'float');
 fwrite(arduino.com,n_param,'uint32');
@@ -16,11 +17,16 @@ fwrite(arduino.com,n_param,'uint32');
 %   disp(['set_mode_param: No response from Arduino board' num2str(get(arduino.com, 'BytesAvailable'))]);
 %   keyboard
 %end
+
+
+disp("begin fread(arduino.com,1,'uint32');")
 mode_echo=fread(arduino.com,1,'uint32');
+disp(mode_echo)
 if (mode_echo~=mode)
     error('COM error for mode');
 end
 
+disp("begin w0_echo=fread(arduino.com,1,'float');")
 w0_echo=fread(arduino.com,1,'float');
 if (abs(w0_echo-w0)>1E-5)
     error('COM error for w0');

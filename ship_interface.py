@@ -72,7 +72,7 @@ class ShipGraph:
         theta, omega, phi = self.update(i)
         self.beam.set_data([self.beam_start[0], self.beam_end[0]],
                            [self.beam_start[1], self.beam_end[1]])
-        self.text.set_text(r"$\theta$ = {:+.2f}, $\omega$ = {:+.2f}, $\phi$ = {:.2f}".format(theta, omega, phi))
+        self.text.set_text(r"$\theta$ = {:+.2f}, $\Omega$ = {:+.2f}, $\Phi$ = {:.2f}".format(theta, omega, phi))
 
         return self.beam, self.text
 

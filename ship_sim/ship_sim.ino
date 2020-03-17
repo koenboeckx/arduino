@@ -18,7 +18,7 @@
 #define K         1.4067          /* K = g*d - G*h [Nm] - see accompanying document */
 #define l         0.15            /* length of the arm [m] */
 #define g         2.0             /* mass mounted at the end of the arm [kg] */
-#define C         0.0619          /* damping coefficient of the water [N*s/m] */
+#define C         0 //0.0619          /* damping coefficient of the water [N*s/m] */
 #define Ixx       0.1748          /* moment of inertia around X-axis [kg*m^2] */
 #define PHI_MIN   -1.57           /* minimum input angle that can be applied */
 #define PHI_MAX   1.57            /* maximum input angle that can be applied */
