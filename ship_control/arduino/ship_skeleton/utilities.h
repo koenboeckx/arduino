@@ -12,4 +12,6 @@ void write_serial_float(float val);
 void write_i2c(float val);
 float read_i2c();
 
+void empty_function();
+
 #endif

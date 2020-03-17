@@ -19,14 +19,11 @@ fwrite(arduino.com,n_param,'uint32');
 %end
 
 
-disp("begin fread(arduino.com,1,'uint32');")
-mode_echo=fread(arduino.com,1,'uint32');
-disp(mode_echo)
+mode_echo = fread(arduino.com,1,'uint32');
 if (mode_echo~=mode)
     error('COM error for mode');
 end
 
-disp("begin w0_echo=fread(arduino.com,1,'float');")
 w0_echo=fread(arduino.com,1,'float');
 if (abs(w0_echo-w0)>1E-5)
     error('COM error for w0');

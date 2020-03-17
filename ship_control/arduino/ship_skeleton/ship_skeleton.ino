@@ -18,7 +18,8 @@
 #define PROPORTIONAL          3
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-float theta; // measurement coming from simulator
+float theta = 0.0;  // measurement coming from simulator
+float   phi = 0.0;  // command to issue to system
 
 float my_param;//set by set_mode_param. Can be used in controller if needed.
 
@@ -65,10 +66,10 @@ void setup()
 void my_callback(float w, byte write_serial, byte mode)
 {
   float   sin_phi = 0.0;
-  float   phi     = 0.0;
   float   K       = 0.;
+  
   //----------read measurements----------
-  get_measurement(&theta);
+  //
   //----------compute command-----------------
    switch (mode) {
     case OPEN_LOOP:
@@ -84,11 +85,10 @@ void my_callback(float w, byte write_serial, byte mode)
     default : 
       sin_phi=0;  
   }
-  //phi = asin(sin_phi);
+  phi = asin(sin_phi);
   phi = sin_phi;
   
-  //------------issue command----------------
-   set_phi(phi);
+
    //----------write measurements on the serial port----------
    //measurements can be read in matlab using get_response.m
    //you can chose the data to send (Max 3 values at 0.5kHz)
@@ -103,4 +103,8 @@ void my_callback(float w, byte write_serial, byte mode)
 void loop()
 {
   communication_loop();
+
+  // get meausrement and set command -> not possible in timer interrupt because through I2C
+  get_measurement(&theta);
+  set_phi(phi);
 }

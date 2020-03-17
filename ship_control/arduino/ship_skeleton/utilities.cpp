@@ -26,8 +26,8 @@ void common_setup(float Tsample) {
     Serial.setTimeout(-1);
 
     Timer1.initialize(Tsample/1E-6);            // initialize timer1,
-    Timer1.pwm(PWM_PIN,0);                    // setup pwm on pin PWM_PIN, 0% duty cycle
-    //Timer1.attachInterrupt(common_callback);    // attaches common_callback() as a timer overflow
+    Timer1.pwm(PWM_PIN, 0);                    // setup pwm on pin PWM_PIN, 0% duty cycle
+    Timer1.attachInterrupt(common_callback);    // attaches common_callback() as a timer overflow
     
     Wire.begin(); // join i2c bus as master
 }
@@ -37,16 +37,16 @@ void common_callback()
   if(cur_meas==n_meas_total-n_meas_before) w=next_w;
   if(cur_meas>0){
     cur_downsample--;
-    if (cur_downsample==0) {
+    if (cur_downsample == 0) {
         cur_meas--;
         my_callback(w, 1, mode);    //write serial data
-        if(cur_meas==0)  meas_just_finished=1; 
+        if(cur_meas == 0)  meas_just_finished=1; 
         cur_downsample=downsample;
     }
     
   } else {
-   my_callback(w,0,mode);           //don't write serial data
-   if  (meas_just_finished) {
+    my_callback(w, 0, mode);           //don't write serial data
+    if  (meas_just_finished) {
         Serial.begin(RX_BAUD_RATE);
         meas_just_finished=0;
     }

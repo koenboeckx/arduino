@@ -30,7 +30,7 @@ arduino.BaudRateRX=115200;
 %% Measure step response
 w0 = -1.0;
 err = set_mode_param(arduino, mode, w0, []);
-%input('Press enter to continue')
+input('Press enter to continue')
 w  = 1.0;
 
 Y = get_response(arduino, w);
