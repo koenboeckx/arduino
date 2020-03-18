@@ -30,7 +30,7 @@
 #define DISTURBANCE   2    /* apply disturbance to system */
 #define STATE         3    /* set the initial value of the system */
 
-float state_vars[N_STATEVARS];       /* theta, omega */  
+float state_vars[N_STATEVARS];       /* z, v */  
 float state_vars_dot[N_STATEVARS];
 float inputs[N_INPUTS];
 

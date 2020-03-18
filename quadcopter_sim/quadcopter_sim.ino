@@ -1,80 +1,74 @@
-/* koen - 28/03/19
- *  Simulates the behavior of a quadcopter (bicoptre). Predicts this behavior based on the 
- *  Runge-Kutta 4 prediction of the next value of the state variables theta, omega
- *  
- *  Resets the values every 20 seconds
- 
+/* koen - 06/04/19
+ *  Generalization of the original quadcopter simulator
  */
 
+#include <stdio.h>
 #include <TimerOne.h> // calculation of new values for state vars is triggered by timing event 
 #include <math.h>
 #include <Wire.h>     // communication via I2C protocol
 
 #define BAUDRATE 115200
-#define SAMPLING_PERIOD 10000 // 10000 us = 100 Hz
+#define SAMPLING_PERIOD 10000 // 5000 us = 200 Hz
 #define I2CADDR 1
 
-// System Parameters
-#define M_BEAM 10.0          // mass of beam
-#define L_BEAM 1.2          // length of beam
-#define KL     0.017          // coeff of motor left
-#define KR     0.017          // coeff of motor right
+#define N_STATEVARS 2    /* number of state variables */
+#define N_INPUTS    3    /* number of input variables */
 
-#define DAMPING_COEFF 0.2  // incorporates energy loss after bounce (both cart and pendulum)
-#define NOISE_VAR 0.002      // intensity of noise added to measurement
+/* System specific parameters */
+#define M_BEAM 15.0             /* mass of beam         */
+#define L_BEAM 1.2              /* length of beam       */
+#define KL     0.017            /* coeff of motor left  */
+#define KR     0.017            /* coeff of motor right */
+#define V_MIN  0.0              /* minimum voltage that can be applied */
+#define V_MAX  20.0             /* maximum voltage that can be applied */
 
-#define V_MIN  0.0
-#define V_MAX 20.0
+#define NOISE_VAR 0.01
 
-// State (and other) Variables
-const float h = SAMPLING_PERIOD/1e6;    // time step
+/* communication modes */
+#define COMMAND       1    /* set the controllable input of the system */
+#define DISTURBANCE   2    /* apply disturbance to system */
+#define STATE         3    /* set the initial value of the system */
+
+float state_vars[N_STATEVARS];       /* theta, omega */  
+float state_vars_dot[N_STATEVARS];
+float inputs[N_INPUTS];
+
+const float h = SAMPLING_PERIOD/1e6;  /* time step for runge-kutta */
+
+/*define variables used for representation, not computation */
 float theta, omega;
 
-float ul = 10.0; // is set with function set_u()
-float ur = 10.0;
-float Troll = 0.0; // disturbance torque
-
-int counter = 0; // counts the number of loops and resets state vars of 100 loops
+float ul      = 0.0; // is set with set_command() 
+float ur      = 0.0;
+float Troll   = 0.0; // disturbance torque
 
 void setup() {
   Timer1.initialize(SAMPLING_PERIOD);
-  Timer1.attachInterrupt(one_step);
+  Timer1.attachInterrupt(next_step);
+  
   Serial.begin(BAUDRATE);
-  
-  Wire.begin(I2CADDR);            // join i2c bus with address I2CADDR
+
+  Wire.begin(I2CADDR);              // join i2c bus with address I2CADDR
   Wire.onRequest(send_measurement); // register event triggered when request is received
-  Wire.onReceive(set_u);            // register event triggered when data is received
-  
+  Wire.onReceive(read_i2c);            // register event triggered when data is received
 
   randomSeed(analogRead(0)); // sets seed for RNG from noise on analog input
   
-  reset();
-}
-
-void reset() { // resets state variables back to their original position
-  theta = 0;
-  omega = 0;//.1*random(-10, 10);
+  init(state_vars);
 }
 
 void loop() {
 
+  //Serial.print(counter); Serial.print(" ");
   Serial.print(theta); Serial.print(" ");
   Serial.print(omega); Serial.print(" ");
   Serial.print(ul);    Serial.print(" ");
   Serial.print(ur);    Serial.print(" ");
   Serial.println(Troll);   
   delay(50);
-
-  counter++;
-
-  if (counter == 1000) {
-    counter = 0;
-    //reset();
-  }
 }
 
-
-//---------------------------- Communication function -----------------------------------------------------------------------------
+//---------------------------- Communication functions---------------------------------------------------------------------------
 
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
@@ -82,33 +76,60 @@ void send_measurement() {
   write_i2c( theta + NOISE_VAR*random(-1, 1));
 }
 
-void set_u(int n_bytes){
-  read_i2c(12, &ul, &ur, &Troll);
-  ul = constrain(ul, V_MIN, V_MAX);
-  ur = constrain(ur, V_MIN, V_MAX);
+
+
+void read_i2c(int n_bytes)
+{
+  char first_byte = Wire.read(); // read first byte on Wire
+  switch (first_byte) {
+    case COMMAND:
+      set_command(&inputs[0], &inputs[1]);
+      break;
+   case DISTURBANCE:
+      set_disturbance(&inputs[2]);
+      break;
+   case STATE:
+      set_state(state_vars);
+      break;
+  }
 }
 
-float read_i2c(int n_bytes, float* ul, float* ur, float* T)
-{ // reads in control "voltages" ul (left) and ur (right) and disturbance torque T
-  char *bbl=(char *)ul; // byte array that shares mem location with float
-  char *bbr=(char *)ur;
-  char *bbT=(char *)T;
-
-  int i = 0;
-  
-  for(int i=0; i<4; i++) {
-    bbl[i] = Wire.read(); // receive a byte as character
+void set_state(float *state_vars)
+{
+  float temp;
+  for (int f=0; f<N_STATEVARS; f++){
+    byte *bb = (byte *)&temp;
+    for(int i=0; i<4; i++) {
+      bb[i] = Wire.read(); // receive a byte as character
+    }
+    state_vars[f] = temp;
   }
-  
+}
 
+void set_disturbance(float *T)
+{
+  char *bb_T = (char *)T;
+  // read in T
   for(int i=0; i<4; i++) {
-    bbr[i] = Wire.read(); // receive a byte as character
+    bb_T[i] = Wire.read(); // receive a byte as character
   }
- 
+}
 
+void set_command(float *ul, float *ur)
+{
+  char *bb_ul = (char *)ul;
+  char *bb_ur = (char *)ur;
+  // read in ul
   for(int i=0; i<4; i++) {
-    bbT[i] = Wire.read(); // receive a byte as character
+    bb_ul[i] = Wire.read(); // receive a byte as character
   }
+  *ul = constrain(*ul, V_MIN, V_MAX);
+
+  // read in ur
+  for(int i=0; i<4; i++) {
+    bb_ur[i] = Wire.read(); // receive a byte as character
+  }
+  *ur = constrain(*ur, V_MIN, V_MAX);
   
 }
 
@@ -118,52 +139,98 @@ void write_i2c(float val)
   Wire.write(b,4);
 }
 
-//---------------------------- Mathematical functions ------------------------------------------------------------------------------
+//---------------------------- Mathematical functions ---------------------------------------------------------------------------
 
-float deriv_theta(float theta, float omega, float ul, float ur) { // compute first derivative of theta = omega
-  return omega;
+/* function called on timer interrupt */
+void next_step()
+{
+  one_step(state_vars, inputs);
+  constraints(state_vars);
+  
+  theta = state_vars[0];
+  omega = state_vars[1];
+  ul    = inputs[0];
+  ur    = inputs[1];
+  Troll = inputs[2];
 }
 
-float deriv_omega(float theta, float omega, float ul, float ur) { // compute first derivative of omega
-  float omega_dot = -6. / (M_BEAM*L_BEAM) * ((KL * sq(ul)) - (KR * sq(ur))) + Troll;
-  return omega_dot;
+/* init: initializes the state vars */
+void init(float *state_vars)
+{
+    state_vars[0] = -0.4;
+    state_vars[1] = 0.1;
+
+}
+/* one_step: performs one step of the Runge-Kutta4 algorithm */
+void one_step(float *state_vars, float *inputs)
+{
+    size_t N = sizeof(state_vars);
+    float k1[N], k2[N], k3[N], k4[N];
+    float temp[N];
+    
+    // step 1 
+    deriv(state_vars, k1, inputs);
+    multiply(k1, h);
+    
+    // step 2 
+    for (int i=0; i<N; i++) {
+        temp[i] = state_vars[i] + k1[i]/2.0;
+    }
+    deriv(temp, k2, inputs);
+    multiply(k2, h);
+    
+    
+    // step 3 
+    for (int i=0; i<N; i++) {
+        temp[i] = state_vars[i] + k2[i]/2.0;
+    }
+    deriv(temp, k3, inputs);
+    multiply(k3, h);
+    
+    // step 4 
+    for (int i=0; i<N; i++) {
+        temp[i] = state_vars[i] + k3[i];
+    }
+    deriv(temp, k4, inputs);
+    multiply(k4, h);
+    
+    // update state_vars 
+    for (int i=0; i<N; i++) {
+        state_vars[i] = state_vars[i] + 1.0/6 * (k1[i] + 2*k2[i] + 2*k3[i] + k4[i]);
+    }
 }
 
-void one_step() { // uses RK4 to compute new values of the state variables
-  float theta_k1, omega_k1;
-  float theta_k2, omega_k2;
-  float theta_k3, omega_k3;
-  float theta_k4, omega_k4;
-
-  // compute k1
-  theta_k1 = h * deriv_theta(theta, omega, ul, ur);
-  omega_k1 = h * deriv_omega(theta, omega, ul, ur);
-
-  // compute k2
-  theta_k2 = h * deriv_theta(theta+theta_k1/2, omega+omega_k1/2, ul, ur);
-  omega_k2 = h * deriv_omega(theta+theta_k1/2, omega+omega_k1/2, ul, ur);
-  
-  // compute k3
-  theta_k3 = h * deriv_theta(theta+theta_k2/2, omega+omega_k2/2, ul, ur);
-  omega_k3 = h * deriv_omega(theta+theta_k2/2, omega+omega_k2/2, ul, ur);
-
-  // compute k4
-  theta_k4 = h * deriv_theta(theta+theta_k3, omega+omega_k3, ul, ur);
-  omega_k4 = h * deriv_omega(theta+theta_k3, omega+omega_k3, ul, ur);
-
-  // update state variables
-  theta = theta + 1.0/6 * (theta_k1 + 2*theta_k2 + 2*theta_k3 + theta_k4);
-  omega = omega + 1.0/6 * (omega_k1 + 2*omega_k2 + 2*omega_k3 + omega_k4);
-  
-  // impose physical constraints
-  // 1. if theta < -pi/6 or > pi/6 => the beam bounces back
-  if (theta < -PI/6) {
-     theta =  -PI/6;
-     omega =  -omega * DAMPING_COEFF;
-  }
-  if (theta > PI/6){
-     theta =  PI/6;
-     omega = -omega * DAMPING_COEFF;
-  }
-  
+/* multiply: multiply array inline with float */
+void multiply(float* arr, float h)
+{
+  for (int i=0; i<sizeof(arr); i++) {arr[i] = h*arr[i]; }
 }
+
+
+/* deriv: computes first-order derivative for all state variables */
+void deriv(float *state_vars, float *state_vars_dot, float *inputs)
+{   
+    float ul    = inputs[0];
+    float ur    = inputs[1];
+    float Troll = inputs[2];
+    
+    state_vars_dot[0]  = state_vars[1];                                             // theta_dot = omega
+    state_vars_dot[1] =  -6./(M_BEAM*L_BEAM) * ((KL*ul*ul) - (KR*ur*ur)) + Troll;   // omega_dot 
+    
+}
+
+/* constraints: impose constraints on state variables */
+void constraints(float *state_vars)
+{
+    /* 1. if theta < -PI/6 or theta > PI/6 => beam bounces back */
+    if (state_vars[0] < -PI/6.0) {
+        state_vars[0] = -PI/6.0;
+        state_vars[1] = 0.0;
+    }
+    if (state_vars[0] >  PI/6.0) {
+        state_vars[0] =  PI/6.0;
+        state_vars[1] = 0.0;
+    }       
+}
+
+ 

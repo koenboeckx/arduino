@@ -16,7 +16,7 @@ params = {'bus_name': '/dev/ttyUSB0',
 
 class MagLevGraph:
     """
-    Shows the movement of the ship
+    Shows the movement of the magnetic levitation
     """
 
     def __init__(self, params):

@@ -1,5 +1,5 @@
-/* koen - 06/04/19
- *  Generalization of the original quadcopter simulator
+/* koen - 18/03/2020
+ *  Ball on Beam simulator
  */
 
 #include <stdio.h>
@@ -9,39 +9,37 @@
 
 #define BAUDRATE 115200
 #define SAMPLING_PERIOD 10000 // 5000 us = 200 Hz
-#define I2CADDR 1
+#define I2CADDR 9 // this is the I2C slave
 
-#define N_STATEVARS 2    /* number of state variables */
-#define N_INPUTS    3    /* number of input variables */
+#define N_STATEVARS 2    /* number of state variables : x and v */
+#define N_INPUTS    2    /* number of input variables */
 
 /* System specific parameters */
-#define M_BEAM 15.0             /* mass of beam         */
-#define L_BEAM 1.2              /* length of beam       */
-#define KL     0.017            /* coeff of motor left  */
-#define KR     0.017            /* coeff of motor right */
-#define V_MIN  0.0              /* minimum voltage that can be applied */
-#define V_MAX  20.0             /* maximum voltage that can be applied */
+#define MASS     0.1    /* weight of magnet [kg] */
+#define GRAV     9.81
+#define LENGTH   0.3    /* length of beam [m] */
+#define A_MIN   -0.18   /* minimum input current [A] */
+#define A_MAX    0.18   /* maximum input current [A] */
 
-#define NOISE_VAR 0.01
+
+#define NOISE_VAR 0.0
 
 /* communication modes */
 #define COMMAND       1    /* set the controllable input of the system */
 #define DISTURBANCE   2    /* apply disturbance to system */
 #define STATE         3    /* set the initial value of the system */
 
-float state_vars[N_STATEVARS];       /* theta, omega */  
+float state_vars[N_STATEVARS];       /* x, v */  
 float state_vars_dot[N_STATEVARS];
 float inputs[N_INPUTS];
 
 const float h = SAMPLING_PERIOD/1e6;  /* time step for runge-kutta */
 
 /*define variables used for representation, not computation */
-float theta, omega;
+float x, v;
+float alpha = 0.0; // is set with set_command() 
 
-float ul      = 0.0; // is set with set_command() 
-float ur      = 0.0;
-float Troll   = 0.0; // disturbance torque
-
+int counter = 0; 
 void setup() {
   Timer1.initialize(SAMPLING_PERIOD);
   Timer1.attachInterrupt(next_step);
@@ -60,12 +58,17 @@ void setup() {
 void loop() {
 
   //Serial.print(counter); Serial.print(" ");
-  Serial.print(theta); Serial.print(" ");
-  Serial.print(omega); Serial.print(" ");
-  Serial.print(ul);    Serial.print(" ");
-  Serial.print(ur);    Serial.print(" ");
-  Serial.println(Troll);   
+  Serial.print(x); Serial.print(" ");
+  Serial.print(v); Serial.print(" ");
+  Serial.print(alpha); Serial.print(" ");
+  Serial.println();
   delay(50);
+  
+  counter++;
+  if (counter == 100) {
+    counter = 0;
+    init(state_vars);
+  }
 }
 
 //---------------------------- Communication functions---------------------------------------------------------------------------
@@ -73,20 +76,18 @@ void loop() {
 // function that executes whenever data is requested by master
 // this function is registered as an event, see setup()
 void send_measurement() {
-  write_i2c( theta + NOISE_VAR*random(-1, 1));
+  write_i2c( x*cos(alpha) );// + NOISE_VAR*random(-1, 1));
 }
-
-
 
 void read_i2c(int n_bytes)
 {
   char first_byte = Wire.read(); // read first byte on Wire
   switch (first_byte) {
     case COMMAND:
-      set_command(&inputs[0], &inputs[1]);
+      set_command(&inputs[0]);
       break;
    case DISTURBANCE:
-      set_disturbance(&inputs[2]);
+      set_disturbance(&inputs[1]);
       break;
    case STATE:
       set_state(state_vars);
@@ -115,22 +116,13 @@ void set_disturbance(float *T)
   }
 }
 
-void set_command(float *ul, float *ur)
+void set_command(float *alpha)
 {
-  char *bb_ul = (char *)ul;
-  char *bb_ur = (char *)ur;
-  // read in ul
+  char *bb_alpha = (char *)alpha;
   for(int i=0; i<4; i++) {
-    bb_ul[i] = Wire.read(); // receive a byte as character
+    bb_alpha[i] = Wire.read(); // receive a byte as character
   }
-  *ul = constrain(*ul, V_MIN, V_MAX);
-
-  // read in ur
-  for(int i=0; i<4; i++) {
-    bb_ur[i] = Wire.read(); // receive a byte as character
-  }
-  *ur = constrain(*ur, V_MIN, V_MAX);
-  
+  *alpha = constrain(*alpha, A_MIN, A_MAX);  
 }
 
 void write_i2c(float val)
@@ -144,21 +136,21 @@ void write_i2c(float val)
 /* function called on timer interrupt */
 void next_step()
 {
+  
   one_step(state_vars, inputs);
   constraints(state_vars);
   
-  theta = state_vars[0];
-  omega = state_vars[1];
-  ul    = inputs[0];
-  ur    = inputs[1];
-  Troll = inputs[2];
+  x     = state_vars[0];
+  v     = state_vars[1];
+  alpha = inputs[0];
 }
 
 /* init: initializes the state vars */
 void init(float *state_vars)
 {
-    state_vars[0] = -0.4;
-    state_vars[1] = 0.1;
+    state_vars[0] =  LENGTH;
+    state_vars[1] =  0.0;
+    inputs[0]     =  -A_MAX/2;
 
 }
 /* one_step: performs one step of the Runge-Kutta4 algorithm */
@@ -206,30 +198,29 @@ void multiply(float* arr, float h)
   for (int i=0; i<sizeof(arr); i++) {arr[i] = h*arr[i]; }
 }
 
-
 /* deriv: computes first-order derivative for all state variables */
 void deriv(float *state_vars, float *state_vars_dot, float *inputs)
 {   
-    float ul    = inputs[0];
-    float ur    = inputs[1];
-    float Troll = inputs[2];
+    float alpha = inputs[0];
+    float x     = state_vars[0];
+    float v     = state_vars[1];
     
-    state_vars_dot[0]  = state_vars[1];                                             // theta_dot = omega
-    state_vars_dot[1] =  -6./(M_BEAM*L_BEAM) * ((KL*ul*ul) - (KR*ur*ur)) + Troll;   // omega_dot 
+    state_vars_dot[0] = v;                           // theta_dot = omega
+    state_vars_dot[1] = -0.714285*GRAV * sin(alpha);      // omega_dot 
     
 }
 
 /* constraints: impose constraints on state variables */
 void constraints(float *state_vars)
 {
-    /* 1. if theta < -PI/6 or theta > PI/6 => beam bounces back */
-    if (state_vars[0] < -PI/6.0) {
-        state_vars[0] = -PI/6.0;
-        state_vars[1] = 0.0;
+    /* 1. put limits on theta */
+    if (state_vars[0] < -LENGTH) {
+        state_vars[0] = -LENGTH;
+        state_vars[1] = -0.2 * state_vars[1];
     }
-    if (state_vars[0] >  PI/6.0) {
-        state_vars[0] =  PI/6.0;
-        state_vars[1] = 0.0;
+    if (state_vars[0] >  LENGTH) {
+        state_vars[0] =  LENGTH;
+        state_vars[1] =  -0.2 * state_vars[1];
     }       
 }
 
