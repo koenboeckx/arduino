@@ -25,17 +25,20 @@ end
 arduino.BaudRateTX=9600;
 arduino.BaudRateRX=115200;
 
+heigth = 10 % maximum height of box
+
 %% Measure step response
-w0 = -1.0;
-err = set_mode_param(arduino, mode, w0, []);
+w0 = 2.5;
+err = set_mode_param(arduino, mode, w0, [5.0]);
 input('Press enter to continue')
-w  = 1.0;
+w  = 2.501;
 
 Y = get_response(arduino, w);
 input = Y(:,1);
-phi   = Y(:,2);
-theta = Y(:,3);
+I     = Y(:,2);
+z     = Y(:,3);
 
 ts = (0:length(input)-1) * Tsample;
-plot(ts, theta)
-
+figure; hold on;
+plot(ts, heigth-z);
+plot(ts, I);

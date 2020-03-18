@@ -1,6 +1,7 @@
-#include "utilities.h"
+#include "lib_el009.h"
 #include "TimerOne.h"
 #include <Wire.h>
+#include <math.h>
 
 #define I2CSLAVE 9 // slave address of the arduino simulator
 #define T_SAMPLE 20E-3
@@ -23,88 +24,113 @@ float   phi = 0.0;  // command to issue to system
 
 float my_param;//set by set_mode_param. Can be used in controller if needed.
 
-void get_measurement(float *theta)
+// helper functions
+float read_i2c()
 {
-  Wire.requestFrom(I2CSLAVE, 4);
-  *theta = read_i2c();
+  float val = 0.0;
+  char *bb=(char *)&val;
+
+  int i = 0;
+  
+  while (Wire.available()) { // slave may send less than requested
+    bb[i] = Wire.read(); // receive a byte as character
+    i++;
+  }
+  return val;
 }
 
-void set_phi(float phi)
+
+void write_i2c(float phi)
 {
+  byte* b_phi = (byte *)&phi;
+
   Wire.beginTransmission(I2CSLAVE);
   Wire.write(COMMAND);
-  write_i2c(phi);
+  Wire.write(b_phi,4);
   Wire.endTransmission();
 }
 
-int set_mode_params(byte mode,int n_param,float *buf)
-//This function is called when matlab calls set_mode_param
-//Set parameters sent by matlab if needed. Else just return 0.
-//return 0 if no error
-{ 
-switch (mode) {
-    case OPEN_LOOP:
-       if (n_param==1)
-       {
-         my_param=buf[0];//if more parameters are sent, they are available in buf[1], ...
-       }
-       else 
-          return(3);//error: bad n_param 
-        break;
-    default : 
-      return(2);//mode not defined  
-  }
-  return(0);
+void getMeasurement(float *theta) {
+  Wire.requestFrom(I2CSLAVE, 4);    // request 4 bytes from slave device
+  *theta = read_i2c();
+
 }
 
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 void setup()
 {
-  common_setup(T_SAMPLE);
+  // Initialize the 'Wire' class for the I2C-bus.
+  Wire.begin();
+  
+  // Call the general initialization routine
+  el009_setup(T_SAMPLE); // only serial & timer callback, no I2C
+  
+  //el009_setRxBaudRate(115200);
+  el009_setRxBaudRate(9600);
 }
 
 
 void my_callback(float w, byte write_serial, byte mode)
 {
-  float   sin_phi = 0.0;
-  float   K       = 0.;
+  float K       = 0.;
   
   //----------read measurements----------
   //
   //----------compute command-----------------
    switch (mode) {
     case OPEN_LOOP:
-      sin_phi = w;
+      phi = w;
       break;
     case CLASSICAL:
       // Implement classical current controller here
-      sin_phi = K*(w-theta);
+      phi = K*(w-theta);
       break;
     case STATE_SPACE:
       // Implement classical state-space controller here
       break;
-    default : 
-      sin_phi=0;  
   }
-  phi = asin(sin_phi);
-  phi = sin_phi;
   
-
    //----------write measurements on the serial port----------
    //measurements can be read in matlab using get_response.m
    //you can chose the data to send (Max 3 values at 0.5kHz)
    if (write_serial) //write measurements you need in matlab.
    {
-     write_serial_float(w);
-     write_serial_float(phi);
-     write_serial_float(theta);
+     float_write_serial(w);
+     float_write_serial(phi);
+     float_write_serial(theta);
    }
+}
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+int set_mode_param(byte mode, int n_param, float *buf)
+// This function is called when matlab calls set_mode_param
+// Set parameters sent by matlab if needed. Else just return 0.
+//
+// Modify this function as needed to communicate parameters from matlab to arduino
+//
+// Return 0 if no error
+//
+{
+  switch (mode) {
+    case OPEN_LOOP:
+       if (n_param==1)
+       {
+         my_param = buf[0]; // If more parameters are sent, they are available in buf[1] and so on, ...
+       }
+       else
+         return(3);// Error: bad n_param
+       break;
+    default :
+      return(2);// Mode not defined
+  }
+  return(0);
 }
 
 void loop()
 {
-  communication_loop();
+  el009_loop();
 
   // get meausrement and set command -> not possible in timer interrupt because through I2C
-  get_measurement(&theta);
-  set_phi(phi);
+  getMeasurement(&theta);
+  write_i2c(phi);
 }
