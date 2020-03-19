@@ -17,7 +17,7 @@ params = {'bus_name': '/dev/ttyUSB0',
 
 class BoBGraph:
     """
-    Shows the movement of the pendulum
+    Shows the movement of the ball-on-beam
     """
 
     def __init__(self, params):
