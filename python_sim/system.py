@@ -170,7 +170,7 @@ def visualizer(graph):
 
 if __name__ == '__main__':
     u = 0.0
-    system = BallOnBeam(0.01)
+    system = BallOnBeam(T=0.001)
 
     # create and start the stepper thread
     step_thread = threading.Thread(target=stepper, args=(system, ))
