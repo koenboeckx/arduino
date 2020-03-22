@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 
-
+ADD_NOISE = False
 
 class BallOnBeam:
     def __init__(self, T):
@@ -33,15 +33,28 @@ class BallOnBeam:
         return self.state[0], self.state[1]
     
     def get_measurement(self):
-        return self.state[0]
+        measurement = self.state[0]# * np.cos(self.u)
+        if ADD_NOISE:
+            measurement += np.random.normal(scale=self.params['L']/20)
+        return measurement
     
     def set_u(self, u):
         self.u = self._constrain_input(u)
     
     def step(self):
-        self.state += self.T * self.deriv(self.t, self.state, self.u)
+        #self.state += self.T * self.deriv(self.t, self.state, self.u)
+        self.state += self._rk4(self.t, self.state, self.u)
+        #print(self.state)
         self.t += self.T
         self._constrain_state()
+
+    def _rk4(self, t, state, u):
+        h = self.T
+        k1 = h * self.deriv(t, state, u)
+        k2 = h * self.deriv(t + h/2, state + k1/2, u)
+        k3 = h * self.deriv(t + h/2, state + k2/2, u)
+        k4 = h * self.deriv(t, state + k3, u)
+        return 1/6*(k1 + k2 + k3 + k4)
     
     def _constrain_input(self, u):
         max_alpha = self.params['max_alpha']
@@ -57,10 +70,10 @@ class BallOnBeam:
         L = self.params['L']
         if x < -L:
             x = -L
-            v = -0.2 * v
+            v = 0.0
         elif x > L:
             x = L
-            v = -0.2 * v
+            v = 0.0
         self.state[0] = x
         self.state[1] = v
     
@@ -68,7 +81,7 @@ class BallOnBeam:
         """Computes first derivative"""
         x_dot = np.zeros((2, ))
         x_dot[0] = x[1]
-        x_dot[1] = -7/5 * 9.81 * np.sin(u); 
+        x_dot[1] = -5/7 * 9.81 * np.sin(u)
         return x_dot
 
 def counter():
@@ -135,7 +148,7 @@ def stepper(system):
     ticker = threading.Event()
     while not ticker.wait(system.T):
         system.step()
-        #print(system.x)
+        #print(system.get_state())
 
 def controller(system):
     address = ('localhost', 6000)
@@ -145,7 +158,6 @@ def controller(system):
     print('connection accepted from ', listener.last_accepted)
     while True:
         msg = conn.recv()
-        print(msg)
         # do something with msg
         if msg == 'measure':
             conn.send(system.get_measurement())
@@ -155,7 +167,7 @@ def controller(system):
                 u = float(u)
                 system.set_u(u)
             except:
-                pass
+                raise ValueError(f"Command {u} not allowed")
         if msg == 'close':
             conn.close()
             break
