@@ -5,9 +5,46 @@ import threading, time, sys, struct
 import numpy as np
 
 modes = {
-    'OPEN_LOOP': 0,
-    'CLASSICAL': 1,
+    'OPEN_LOOP':    0,
+    'CLASSICAL':    1,
+    'STATE-SPACE':  2,
+    'PROPORTIONAL': 3,
 }
+
+#### ------ only change Controller class ----------- ####
+
+class Controller:
+    "Your Controller"
+    def __init__(self):
+        self.pole = 0.85
+        self.zero = 0.95
+        self.k = 8.0
+
+        self.u_prev = 0.0
+        self.prev_error = 0.0
+    
+    def set_params(self, params):
+        "params from matlab set_mode_params"
+        self.zero = params[0]
+        self.pole = params[1]
+        self.k    = params[2]
+
+    def __call__(self, y):
+        error = params.w - y
+        if params.mode == 'OPEN_LOOP':
+            u = params.w
+        elif params.mode == 'PROPORTIONAL':
+            u = self.k*(params.w - y)
+        elif params.mode == 'CLASSICAL':
+            u = self.pole * self.u_prev + self.k*(error - self.zero*self.prev_error)
+            self.u_prev = u
+            self.prev_error = error
+        else:
+            u = 0.0
+        #print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
+        return u
+
+#### ------ don't change anything below ----------- ####
 
 def get_measurement(conn):
     conn.send('measure')
@@ -18,39 +55,10 @@ def set_u(conn, u):
     conn.send('command')
     conn.send(u)
 
-class Controller:
-    "Simple proportional controller"
-    def __init__(self):
-        self.pole = 0.85
-        self.zero = 0.95
-        self.k = 8.0
-
-        self.u_prev = 0.0
-        self.prev_error = 0.0
-    
-    def set_params(self, params):
-        self.zero = params[0]
-        self.pole = params[1]
-        self.k    = params[2]
-
-    def __call__(self, y):
-        if params.mode == 'OPEN_LOOP':
-            return params.w
-        elif params.mode == 'PROPORTIONAL':
-            return self.K*(params.w - y)
-        elif params.mode == 'CLASSICAL':
-            error = params.w - y
-            u = self.pole * self.u_prev + self.k*(error - self.zero*self.prev_error)
-            self.u_prev = u
-            self.prev_error = error
-            print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
-            return u
-        else:
-            return -self.K*y
-
 def system_comms(controller, params):
     address = ('localhost', 6000)
     with Client(address, authkey=b'secret') as conn:
+        params.system_conn = conn
         while True:
             y = get_measurement(conn)
             u = controller(y)
@@ -98,11 +106,13 @@ def matlab_comms(controller, params):
             data = connection.recv(4) # receive mode integer
             if data:
                 mode = int.from_bytes(data, byteorder='big')
-                if mode == 254:
+                print(mode)
+                if mode == 253: # reset system
+                    params.system_conn.send('reset')
+                elif mode == 254: # close connection
                     print(f'Closing connection {connection}')
                     connection.close()
-                    break
-                if mode == 255: # get response
+                elif mode == 255: # get response
                     params.w = read_float(connection)
                     params.n_samples = read_int(connection)
                 else:
@@ -121,14 +131,16 @@ def matlab_comms(controller, params):
 
 class Params: # global object for comms between threads
     n_samples = 0
-    Ts = 0.01
+    Ts = 0.001
     ip = 6007
     mode = 'OPEN_LOOP'
     
     Y = []
     U = []
-    matlab_con = None
+    matlab_conn = None
+    system_conn = None
     w = 0.0
+    reset = False
     
 
 if __name__ == '__main__': 

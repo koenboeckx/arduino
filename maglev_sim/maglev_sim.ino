@@ -165,7 +165,7 @@ void one_step(float *state_vars, float *inputs)
     multiply(k1, h);
     
     // step 2 
-    for (int i=0; i<N; i++) {
+    for (int i=0; i<N; i++) {_nonlinear
         temp[i] = state_vars[i] + k1[i]/2.0;
     }
     deriv(temp, k2, inputs);
