@@ -55,6 +55,10 @@ def set_u(conn, u):
     conn.send('command')
     conn.send(u)
 
+def set_disturbance(conn, disturbance):
+    conn.send('disturbance')
+    conn.send(disturbance)
+
 def system_comms(controller, params):
     address = ('localhost', 6000)
     with Client(address, authkey=b'secret') as conn:

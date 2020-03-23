@@ -1,4 +1,6 @@
-"""System simulator"""
+"""System simulator
+Usage: python3 system.py [bob|ship|maglev|bicopter]
+"""
 
 import threading, time, sys
 from multiprocessing.connection import Listener
@@ -508,6 +510,13 @@ def controller(system):
                 system.set_u(u)
             except:
                 raise ValueError(f"Command {u} not allowed")
+        elif msg == 'disturbance':
+            disturbance = conn.recv()
+            try:
+                disturbance = float(disturbance)
+                system.disturbance = disturbance
+            except:
+                raise ValueError(f"Disturbance {disturbance} not allowed")
         elif msg == 'reset':
             system.state = system.init_state()
             system.u = 0.0
