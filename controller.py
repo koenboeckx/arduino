@@ -109,9 +109,12 @@ def matlab_comms(controller, params):
         while True:
             data = connection.recv(4) # receive mode integer
             if data:
-                mode = int.from_bytes(data, byteorder='big')
+                mode = int.from_bytes(data, byteorder='little')
                 print(mode)
-                if mode == 253: # reset system
+                if mode == 252: # set disturbance
+                    disturbance = read_float(connection)
+                    set_disturbance(params.system_conn, disturbance)
+                elif mode == 253: # reset system
                     params.system_conn.send('reset')
                 elif mode == 254: # close connection
                     print(f'Closing connection {connection}')

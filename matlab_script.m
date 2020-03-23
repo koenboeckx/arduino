@@ -1,9 +1,9 @@
 %% define parameters and creta tcp/ip object
 T_sample = 0.01;
-n_samples = 1000;
+n_samples = 100;
 ts = (0:n_samples-1)*T_sample;
 
-arduino = tcpclient('localhost', 6010, 'Timeout', 60);
+arduino = tcpclient('localhost', 6013, 'Timeout', 60);
 
 
 % Standard modes (must correspond to similar mode in Ardunio code)
@@ -14,16 +14,18 @@ STATE_SPACE = 2;
 %%
 mode = OPEN_LOOP;
 
-w = 0.0
+w = -0.5
 set_mode_params(arduino, mode, w, [])
 
 input('press enter')
 
-w = 1.5
+w = 0.75
 [y, u] = get_response(arduino, w, n_samples)
 
 figure; plot(ts, y); title("y");
 figure; plot(ts, u); title("u");
+%%
+set_disturbance(arduino, 0.0)
 %%
 mode = CLASSICAL;
 w = 0.0;

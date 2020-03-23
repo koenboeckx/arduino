@@ -19,6 +19,7 @@ class System:
         self.state = self.init_state()
         self.u = 0.0 # keep track of last given command
         self.params = {} # container for system parameters
+        self.disturbance = 0.0 # use depends on application
     
     def get_state(self):
         return self.state[0], self.state[1]
@@ -216,7 +217,7 @@ class Bicopter(System):
 
         x_dot = np.zeros((2, ))
         x_dot[0] = omega
-        x_dot[1] = -6./(mass*length) * K*u
+        x_dot[1] = -6./(mass*length) * K*u + self.disturbance
         return x_dot
 
 class Ship(System):
@@ -417,20 +418,21 @@ class BicopterGraph:
     def get_state(self):
         theta, omega = self.system.get_state()
         V = self.system.u
-        return theta, omega, V
+        torque = self.system.disturbance
+        return theta, omega, V, torque
 
     def update(self, i=0):
-        theta, omega, V = self.get_state()
+        theta, omega, V, torque = self.get_state()
         
         self.beam_start = np.hstack((-self.L/2*np.cos(theta), -self.L/2*np.sin(theta)))
         self.beam_end   = np.hstack(( self.L/2*np.cos(theta),  self.L/2*np.sin(theta)))
-        return theta, omega, V
+        return theta, omega, V, torque
 
     def show(self, i):
-        theta, omega, V = self.update(i)
+        theta, omega, V, torque = self.update(i)
         self.beam.set_data([self.beam_start[0], self.beam_end[0]],
                            [self.beam_start[1], self.beam_end[1]])
-        self.text.set_text(r'$\theta$ = {:+.2f}, $\omega$ = {:+.2f}, $V$ = {:.2f}'.format(theta, omega, V))
+        self.text.set_text(r'$\theta$ = {:+.2f}, $\omega$ = {:+.2f}, $V$ = {:.2f}, $T$ = {:.2f}'.format(theta, omega, V, torque))
 
         return self.beam, self.text
 
@@ -499,7 +501,6 @@ def controller(system):
     print('connection accepted from ', listener.last_accepted)
     while True:
         msg = conn.recv()
-        print(msg)
         # do something with msg
         if msg == 'measure':
             conn.send(system.get_measurement())
@@ -511,6 +512,7 @@ def controller(system):
             except:
                 raise ValueError(f"Command {u} not allowed")
         elif msg == 'disturbance':
+            print(msg)
             disturbance = conn.recv()
             try:
                 disturbance = float(disturbance)
