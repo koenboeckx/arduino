@@ -6,15 +6,15 @@ mode = uint8(255);
 write(arduino, mode);
 
 write(arduino, single(w));
-write(arduino, uint8(n_samples));
+write(arduino, uint32(n_samples));
 
 Y = zeros(1, n_samples);
 for i = 1:n_samples
-	Y(i) = read(arduino, 1, 'double')
+	Y(i) = read(arduino, 1, 'double');
 end
 
 
 U = zeros(1, n_samples);
 for i = 1:n_samples
-	U(i) = read(arduino, 1, 'double')
+	U(i) = read(arduino, 1, 'double');
 end

@@ -3,7 +3,7 @@ T_sample = 0.01;
 n_samples = 300;
 ts = (0:n_samples-1)*T_sample;
 
-arduino = tcpclient('localhost', 6086, 'Timeout', 60);
+arduino = tcpclient('localhost', 6009, 'Timeout', 60);
 
 
 % Standard modes (must correspond to similar mode in Ardunio code)

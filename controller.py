@@ -87,7 +87,7 @@ def read_float(conn):
 
 def read_int(conn):
     val_bytes = conn.recv(4)
-    val = int.from_bytes(val_bytes, byteorder='big')
+    val = int.from_bytes(val_bytes, byteorder='little')
     return val
 
 def matlab_comms(controller, params):
@@ -115,6 +115,7 @@ def matlab_comms(controller, params):
                 elif mode == 255: # get response
                     params.w = read_float(connection)
                     params.n_samples = read_int(connection)
+                    print(params.n_samples)
                 else:
                     params.w = read_float(connection)
                     n_params = read_int(connection)
