@@ -275,7 +275,7 @@ class Ship(System):
 
         x_dot = np.zeros((2, ))
         x_dot[0] = omega
-        x_dot[1] = 1/Ixx * (-K*np.sin(theta) + g*l*np.sin(phi)*np.cos(theta) - C*omega)
+        x_dot[1] = 1/Ixx * (-K*np.sin(theta) + g*l*np.sin(phi)*np.cos(theta) - C*omega) + self.disturbance
         return x_dot    
         
 def counter():

@@ -26,10 +26,10 @@ figure; plot(ts, y); title("y");
 figure; plot(ts, u); title("u");
 %%
 set_disturbance(arduino, 10.0)
-pause(2.0)
+pause(1.0)
 set_disturbance(arduino, 0.0)
 [y, u] = get_response(arduino, 0.0, 500);
-figure; plot(y); title("y");
+figure; plot(ts, y); title("y");
 %%
 mode = CLASSICAL;
 w = 0.0;
