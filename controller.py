@@ -25,12 +25,11 @@ class Controller:
         self.k    = params[0]
 
     def __call__(self, y):
-        error = params.w - y
         if params.mode == 'OPEN_LOOP':
             u = params.w
         elif params.mode == 'CLASSICAL':
             error = params.w - y
-            return self.k * error
+            u = self.k * error
         elif params.mode == 'STATE_SPACE':
              pass
         else:

@@ -1,5 +1,7 @@
 # Part of the course ES323 - Control Systems project.
 
+See the instruction video [here](https://youtu.be/RkP7duME04g)
+
 ## Requirements:
 * matlab
 * python 3 (preferably 3.6, although 3.7 might work as well but hasn't been tested)
