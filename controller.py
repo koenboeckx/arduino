@@ -8,7 +8,6 @@ modes = {
     'OPEN_LOOP':    0,
     'CLASSICAL':    1,
     'STATE-SPACE':  2,
-    'PROPORTIONAL': 3,
 }
 
 #### ------ only change Controller class ----------- ####
@@ -16,8 +15,6 @@ modes = {
 class Controller:
     "Your Controller"
     def __init__(self):
-        self.pole = 0.85
-        self.zero = 0.95
         self.k = 8.0
 
         self.u_prev = 0.0
@@ -25,28 +22,17 @@ class Controller:
     
     def set_params(self, params):
         "params from matlab set_mode_params"
-        self.zero = params[0]
-        self.pole = params[1]
-        self.k    = params[2]
+        self.k    = params[0]
 
     def __call__(self, y):
         error = params.w - y
         if params.mode == 'OPEN_LOOP':
             u = params.w
-        elif params.mode == 'PROPORTIONAL':
-            u = self.k*(params.w - y)
         elif params.mode == 'CLASSICAL':
-            e1 = error
-            u1 = -e1
-            e2 = params.w - u1
-            u2 = self.pole * self.u_prev + self.k*(e2 - self.zero*self.prev_error)
-            self.u_prev = u2
-            self.prev_error = e2
-            u = u2
-        elif params.mode == 'LL':
-            u = self.pole * self.u_prev + self.k*(error - self.zero*self.prev_error)
-            self.u_prev = u
-            self.prev_error = error
+            error = params.w - y
+            return self.k * error
+        elif params.mode == 'STATE_SPACE':
+             pass
         else:
             u = 0.0
         #print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
@@ -148,11 +134,13 @@ def matlab_comms(controller, params):
                         params.mode = 'OPEN_LOOP'
                     elif mode ==  modes['CLASSICAL']:
                         params.mode = 'CLASSICAL'
+                    elif mode ==  modes['STATE_SPACE']:
+                        params.mode = 'STATE_SPACE'
         connection.close()
 
 class Params: # global object for comms between threads
     n_samples = 0
-    Ts = 0.001
+    Ts = 0.01
     ip = 6007
     mode = 'OPEN_LOOP'
     
