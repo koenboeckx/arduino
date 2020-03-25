@@ -514,8 +514,8 @@ def controller(system):
             except:
                 raise ValueError(f"Command {u} not allowed")
         elif msg == 'disturbance':
-            print(msg)
             disturbance = conn.recv()
+            print(f'disturbance: {disturbance}')
             try:
                 disturbance = float(disturbance)
                 system.disturbance = disturbance

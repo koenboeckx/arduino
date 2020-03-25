@@ -1,10 +1,10 @@
-%% define parameters and creta tcp/ip object
+%% define parameters and create tcp/ip object
+arduino = tcpclient('localhost', 6016, 'Timeout', 60);
+
+%% define parameters and modes
 T_sample = 0.01;
-n_samples = 100;
+n_samples = 200;
 ts = (0:n_samples-1)*T_sample;
-
-arduino = tcpclient('localhost', 6011, 'Timeout', 60);
-
 
 % Standard modes (must correspond to similar mode in Ardunio code)
 OPEN_LOOP   = 0;
@@ -30,56 +30,62 @@ end
 %%
 mode = OPEN_LOOP;
 
-w = -0.5
+w = -1.0
 set_mode_params(arduino, mode, w, [])
 
 input('press enter')
 
-w = 0.75
+w = 1.0
 [y, u] = get_response(arduino, w, n_samples)
-
+%%
 figure; plot(ts, y); title("y");
 figure; plot(ts, u); title("u");
+
+%% Estimate parameters
+
+p = polyfit(ts(1:200), y(1:200), 2);
+x_fit = polyval(p, ts);
+
+figure; hold on;
+plot(ts, y, ts, x_fit);
+
 %%
-set_disturbance(arduino, 10.0)
-pause(2.0)
-set_disturbance(arduino, 0.0)
-[y, u] = get_response(arduino, 0.0, 500);
-figure; plot(y); title("y");
+% Define system
+K = p(1)/(2*w);
+S = tf([K/0.25], [1, 0, 0]);
+y_ = step(S, ts);
+plot(ts, y_+p(3))
+%%
+Sd = c2d(S, T_sample);
+%figure; rlocus(Sd);
+k1 = 1; Scl1 = feedback(k1*Sd, 1);
+%figure; rlocus(Scl1);
+ps = pole(Scl1);
+R = zpk(ps(2), 0.9*ps(2), 1, T_sample);
+figure; rlocus(-R*Scl1);
+
+k2 = 168;
+Scl2 = feedback(-k2*R*Scl1, 1);
+figure; step(Scl2)
 %%
 mode = CLASSICAL;
 w = 0.0;
-set_mode_params(arduino, mode, w, [0.95, 0.7, -1.]);
+set_mode_params(arduino, mode, w, [ps(2), 0.9*ps(2), -k2]);
 
 input('press enter')
 
-w = 0.5;
-n_samples = 2000;
+w = 0.05
+n_samples = 300;
 ts = (0:n_samples-1)*T_sample;
 [y, u] = get_response(arduino, w, n_samples)
-figure; plot(ts, y); title("y");
+y_ = w*step(Scl2, ts);
+figure; plot(ts, y, ts, y_); title("y");
 figure; plot(ts, u); title("u");
-%% Estimate parameters
-Y_ = Y;
-p = polyfit(ts(1:20), Y(1:20), 2);
-x_fit = polyval(p, ts);
-plot(ts, Y, ts, x_fit);
+
 %%
-%K = p(1)*2/abs(w);
-K = -5/7 * 9.81;
-sys = tf([K], [1 0 0]); sysd = c2d(sys, T_sample);
-figure; step(abs(w)*sys, ts)
-figure; rlocus(sysd);
-%% construct first loop
-figure; rlocus(sysd);
-R = zpk([0.95], [0.9], 1, T_sample);
-figure; rlocus(R*sysd);
-gain = -1.;
-sysd_cl = feedback(gain*R*sysd, 1);
-figure; step(sysd_cl, 2.5);
+set_mode_params(arduino, mode, 0.0, [ps(2), 0.9*ps(2), -k2]);
 %%
-sys_e_u = feedback(-gain*R, sysd);
-figure; step(sys_e_u)
+set_disturbance(0.1);
 %%
 close_connection(arduino)
 clear CLASSICAL
