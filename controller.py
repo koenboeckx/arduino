@@ -36,6 +36,14 @@ class Controller:
         elif params.mode == 'PROPORTIONAL':
             u = self.k*(params.w - y)
         elif params.mode == 'CLASSICAL':
+            e1 = error
+            u1 = -e1
+            e2 = params.w - u1
+            u2 = self.pole * self.u_prev + self.k*(e2 - self.zero*self.prev_error)
+            self.u_prev = u2
+            self.prev_error = e2
+            u = u2
+        elif params.mode == 'LL':
             u = self.pole * self.u_prev + self.k*(error - self.zero*self.prev_error)
             self.u_prev = u
             self.prev_error = error
