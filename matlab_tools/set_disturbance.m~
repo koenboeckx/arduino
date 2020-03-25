@@ -1,4 +1,0 @@
-function reset_system(arduino, disturbance)
-
-write(arduino, uint8(25));
-end

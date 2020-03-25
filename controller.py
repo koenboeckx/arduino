@@ -86,7 +86,12 @@ def system_comms(controller, params):
 
 def read_float(conn):
     w_bytes  = conn.recv(4)
-    w = struct.unpack('f', w_bytes)[0]
+    try:
+        w = struct.unpack('f', w_bytes)[0]
+    except:
+        print(w_bytes)
+        print('ValueError!!!')
+        w = 0.0
     return w
 
 def read_int(conn):
@@ -110,7 +115,7 @@ def matlab_comms(controller, params):
             data = connection.recv(4) # receive mode integer
             if data:
                 mode = int.from_bytes(data, byteorder='little')
-                print(mode)
+                print(f'mode = {mode}')
                 if mode == 252: # set disturbance
                     disturbance = read_float(connection)
                     set_disturbance(params.system_conn, disturbance)
@@ -122,7 +127,7 @@ def matlab_comms(controller, params):
                 elif mode == 255: # get response
                     params.w = read_float(connection)
                     params.n_samples = read_int(connection)
-                    print(params.n_samples)
+                    print(f'n_samples = {params.n_samples}')
                 else:
                     params.w = read_float(connection)
                     n_params = read_int(connection)

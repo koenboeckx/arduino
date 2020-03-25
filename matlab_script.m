@@ -3,7 +3,7 @@ T_sample = 0.01;
 n_samples = 100;
 ts = (0:n_samples-1)*T_sample;
 
-arduino = tcpclient('localhost', 6014, 'Timeout', 60);
+arduino = tcpclient('localhost', 6011, 'Timeout', 60);
 
 
 % Standard modes (must correspond to similar mode in Ardunio code)
@@ -11,6 +11,22 @@ OPEN_LOOP   = 0;
 CLASSICAL   = 1; %classical (PID family) controller
 STATE_SPACE = 2;
 
+%%
+mode = OPEN_LOOP;
+w = 20.0;
+height = 1.0;
+set_disturbance(arduino, height)
+set_mode_params(arduino, mode, w, [])
+reset_system(arduino);
+%%
+set_mode_params(arduino, mode, w, [])
+for w = linspace(20.0, 0.0, 101)
+    [y, u] = get_response(arduino, w, 5);
+    if(y(end) > height)
+        break
+    end
+    pause(0.1)
+end    
 %%
 mode = OPEN_LOOP;
 

@@ -112,11 +112,12 @@ class MagLev(System):
             'Z_min':        0.0,    # minimum position [cm]
             'Z_max':        10.0,   # maximum position [cm]
             'I_min':        0.0,    # minimum input current [A] 
-            'I_max':        5.0,    # maximum input current [A]
+            'I_max':        20.0,  # maximum input current [A]
             'imag_current': 3.0,    # current that represents static magnet [A]
-            'mass':         0.1,    # mass of magnet [kg]
+            'mass':         0.5,    # mass of magnet [kg]
             'grav':         9.81,
         }
+        self.disturbance = 0.0
     
     def init_state(self):
         return np.array([5.0, 0.0])
@@ -137,6 +138,7 @@ class MagLev(System):
             return u 
     
     def _constrain_state(self):
+        self.params['Z_min'] = self.disturbance
         x, v = self.state[0], self.state[1]
         if x < self.params['Z_min']:
             x = self.params['Z_min']
