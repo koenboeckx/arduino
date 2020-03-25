@@ -102,7 +102,7 @@ class BallOnBeam(System):
         """Computes first derivative"""
         x_dot = np.zeros((2, ))
         x_dot[0] = x[1]
-        x_dot[1] = -5/7 * 9.81 * np.sin(u) - self.params["friction"]*x[1]
+        x_dot[1] = -5/7 * 9.81 * np.sin(u) - self.params["friction"]*x[1] + self.disturbance
         return x_dot
 
 class MagLev(System):

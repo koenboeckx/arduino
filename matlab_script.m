@@ -1,5 +1,5 @@
 %% define parameters and create tcp/ip object
-arduino = tcpclient('localhost', 6016, 'Timeout', 60);
+arduino = tcpclient('localhost', 6014, 'Timeout', 60);
 
 %% define parameters and modes
 T_sample = 0.01;
@@ -14,10 +14,11 @@ STATE_SPACE = 2;
 %%
 mode = OPEN_LOOP;
 w = 20.0;
-height = 1.0;
-set_disturbance(arduino, height)
-set_mode_params(arduino, mode, w, [])
-reset_system(arduino);
+set_disturbance(arduino, -10.0)
+pause(0.1);
+set_disturbance(arduino, 0.0)
+set_mode_params(arduino, mode, -0.1, [])
+%reset_system(arduino);
 %%
 set_mode_params(arduino, mode, w, [])
 for w = linspace(20.0, 0.0, 101)
@@ -26,7 +27,18 @@ for w = linspace(20.0, 0.0, 101)
         break
     end
     pause(0.1)
-end    
+end
+%%
+set_mode_params(arduino, mode, 20.0, [])
+reset_system(arduino);
+input('press enter')
+
+n_samples = 250;
+ts = (0:n_samples-1)*T_sample;
+[y, u] = get_response(arduino, w/1.1, n_samples)
+%%
+figure; plot(ts, y); title("y"); xlabel('t')
+figure; plot(ts, u); title("u"); xlabel('t')
 %%
 mode = OPEN_LOOP;
 
