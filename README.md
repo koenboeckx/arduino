@@ -1,6 +1,10 @@
 # Part of the course ES323 - Control Systems project.
 
-See the instruction video [here](https://youtu.be/RkP7duME04g)
+Instruction videos:
+* [General instructions and bicoprter](https://youtu.be/RkP7duME04g)
+* [Ship](https://youtu.be/MT4inNxh6Ik)
+* [Magnetic Levitaion](https://youtu.be/1t1lSZ-Gydc)
+* [Ball on Beam](https://youtu.be/IkTkY4SD-5k)
 
 ## Requirements:
 * matlab

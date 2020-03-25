@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 
-ADD_NOISE = False
+ADD_NOISE = True
 
 class System:
     def __init__(self, T):
@@ -256,6 +256,7 @@ class Ship(System):
     
     def _constrain_state(self):
         theta, omega = self.state[0], self.state[1]
+        theta += + self.disturbance
         if theta < self.params['theta_min']:
             theta = self.params['theta_min']
             omega = 0.0
@@ -276,8 +277,8 @@ class Ship(System):
         phi = self.u
 
         x_dot = np.zeros((2, ))
-        x_dot[0] = omega
-        x_dot[1] = 1/Ixx * (-K*np.sin(theta) + g*l*np.sin(phi)*np.cos(theta) - C*omega) + self.disturbance
+        x_dot[0] = omega 
+        x_dot[1] = 1/Ixx * (-K*np.sin(theta) + g*l*np.sin(phi)*np.cos(theta) - C*omega) 
         return x_dot    
         
 def counter():
