@@ -9,6 +9,7 @@ Instruction videos:
 ## Requirements:
 * matlab
 * python 3 (preferably 3.6, although 3.7 might work as well but hasn't been tested)
+* numpy
 * matplotlib (for visualization)
 
 ## General instructions:
