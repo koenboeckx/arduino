@@ -1,5 +1,5 @@
 %% define parameters and create tcp/ip object
-arduino = tcpclient('localhost', 6014, 'Timeout', 60);
+arduino = tcpclient('localhost', 6010, 'Timeout', 60);
 
 %% define parameters and modes
 T_sample = 0.01;
@@ -13,11 +13,11 @@ STATE_SPACE = 2;
 
 %%
 mode = OPEN_LOOP;
-w = -1.0;
+w = -0.1;
 set_mode_params(arduino, mode, w, [])
 input('press enter')
 
-w = 1.0
+w = 0.1
 [y, u] = get_response(arduino, w, n_samples)
 %%
 figure; plot(ts, y); title("y"); xlabel('t')

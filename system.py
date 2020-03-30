@@ -7,6 +7,7 @@ from multiprocessing.connection import Listener
 
 import numpy as np
 import matplotlib.pyplot as plt
+plt.switch_backend("TkAgg")
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 

@@ -3,7 +3,7 @@
 Instruction videos:
 * [General instructions and bicopter](https://youtu.be/RkP7duME04g)
 * [Ship](https://youtu.be/MT4inNxh6Ik)
-* [Magnetic Levitaion](https://youtu.be/1t1lSZ-Gydc)
+* [Magnetic Levitation](https://youtu.be/1t1lSZ-Gydc)
 * [Ball on Beam](https://youtu.be/IkTkY4SD-5k)
 
 ## Requirements:
@@ -13,7 +13,7 @@ Instruction videos:
 * matplotlib (for visualization)
 
 ## General instructions:
-1. download the files, either with `git clone` (preferred) or by downloading all the files in zip format (choose `Clone or download` in the top right corner)
+1. Download the files, either with `git clone` (preferred) or by downloading all the files in zip format (choose `Clone or download` in the top right corner).
 1. Unzip the files (if needed). Open a command window and `cd` into the newly created directory.
 1. Start the system simulator: `python3 system.py [bob|ship|maglev|bicopter]`.
 Specifying the type of system to simulate is mandatory.
