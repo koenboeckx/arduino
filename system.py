@@ -70,7 +70,7 @@ class BallOnBeam(System):
         }
     
     def init_state(self):
-        return np.array([1.0, 1.0])
+        return np.array([0.0, 0.0])
     
     def get_measurement(self):
         measurement = self.state[0] * np.cos(self.u)
@@ -257,7 +257,7 @@ class Ship(System):
     
     def _constrain_state(self):
         theta, omega = self.state[0], self.state[1]
-        theta += + self.disturbance
+        theta += self.disturbance
         if theta < self.params['theta_min']:
             theta = self.params['theta_min']
             omega = 0.0
@@ -544,7 +544,7 @@ if __name__ == '__main__':
     system_type = sys.argv[1]
     print(f"System type: {system_type}")
     u = 0.0
-    step_size = 0.001
+    step_size = 0.01
 
     if system_type == 'bob':
         system = BallOnBeam(T=step_size)

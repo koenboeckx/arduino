@@ -139,7 +139,7 @@ def matlab_comms(controller, params):
 
 class Params: # global object for comms between threads
     n_samples = 0
-    Ts = 0.01
+    Ts = 0.05
     ip = 6007
     mode = 'OPEN_LOOP'
     
