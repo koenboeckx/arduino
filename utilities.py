@@ -97,6 +97,7 @@ def matlab_comms(controller, params):
                 elif mode == 254: # close connection
                     print(f'Closing connection {connection}')
                     connection.close()
+                    break
                 elif mode == 255: # get response
                     params.w = read_float(connection)
                     params.n_samples = read_int(connection)
@@ -104,15 +105,15 @@ def matlab_comms(controller, params):
                 else:
                     params.w = read_float(connection)
                     n_params = read_int(connection)
-                    if n_params > 0:
-                        parameters = []
-                        for _ in range(n_params):
-                            parameters.append(read_float(connection))
-                        controller.set_params(parameters)
                     if mode ==  modes['OPEN_LOOP']:
                         params.mode = 'OPEN_LOOP'
                     elif mode ==  modes['CLASSICAL']:
                         params.mode = 'CLASSICAL'
                     elif mode ==  modes['STATE_SPACE']:
                         params.mode = 'STATE_SPACE'
+                    if n_params > 0:
+                        parameters = []
+                        for _ in range(n_params):
+                            parameters.append(read_float(connection))
+                        controller.set_params(parameters)
         connection.close()

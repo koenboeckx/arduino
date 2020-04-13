@@ -8,9 +8,9 @@ class Controller:
         self.u_prev = 0.0
         self.prev_error = 0.0
     
-    def set_params(self, params):
+    def set_params(self, parameters):
         "params from matlab set_mode_params"
-        self.k    = params[0]
+        self.k    = parameters[0]
 
     def __call__(self, y):
         if params.mode == 'OPEN_LOOP':
@@ -24,6 +24,8 @@ class Controller:
             u = 0.0
         #print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
         return u, [u, y]
+
+#### ------ don't change anything below ----------- ####
 
 if __name__ == '__main__': 
     params = Params()
