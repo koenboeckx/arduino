@@ -1,4 +1,4 @@
-function [Y, U] = get_response(arduino, w, n_samples)
+function Y = get_response(arduino, w, n_samples)
 %GET_RESPONSE Get sequence of measurements from the controller
 %   Reference value is set at w
 
@@ -8,13 +8,12 @@ write(arduino, mode);
 write(arduino, single(w));
 write(arduino, uint32(n_samples));
 
-Y = zeros(1, n_samples);
+n = round(read(arduino, 1, 'double')) % how many items per sample
+
+Y = zeros(n, n_samples);
 for i = 1:n_samples
-	Y(i) = read(arduino, 1, 'double');
+    for j = 1:n
+        Y(j, i) = read(arduino, 1, 'double');
+    end
 end
 
-
-U = zeros(1, n_samples);
-for i = 1:n_samples
-	U(i) = read(arduino, 1, 'double');
-end
