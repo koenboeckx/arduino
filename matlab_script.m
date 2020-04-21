@@ -10,6 +10,7 @@ ts = (0:n_samples-1)*T_sample;
 OPEN_LOOP   = 0;
 CLASSICAL   = 1; %classical (PID family) controller
 STATE_SPACE = 2;
+EXTENDED    = 3;
 
 %%
 mode = OPEN_LOOP;
