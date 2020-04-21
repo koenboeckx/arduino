@@ -19,7 +19,9 @@ class Controller:
             error = params.w - y
             u = self.k * error
         elif params.mode == 'STATE_SPACE':
-             pass
+            pass
+        elif params.mode == 'EXTENDED':
+            pass
         else:
             u = 0.0
         #print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
