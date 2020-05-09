@@ -26,7 +26,7 @@ class System:
         return self.state[0], self.state[1]
 
     def set_u(self, u):
-            self.u = self._constrain_input(u)
+        self.u = self._constrain_input(u)
     
     def step(self):
         #self.state += self.T * self.deriv(self.t, self.state, self.u)  # Euler scheme
@@ -36,6 +36,7 @@ class System:
 
     def _rk4(self, t, state, u):
         """Implements Runge-Kutta-4 integration scheme"""
+        
         h = self.T
         k1 = h * self.deriv(t, state, u)
         k2 = h * self.deriv(t + h/2, state + k1/2, u)
@@ -114,7 +115,7 @@ class MagLev(System):
             'Z_max':        10.0,   # maximum position [cm]
             'I_min':        0.0,    # minimum input current [A] 
             'I_max':        20.0,  # maximum input current [A]
-            'imag_current': 3.0,    # current that represents static magnet [A]
+            'imag_current': 0.0, #3.0,    # current that represents static magnet [A]
             'mass':         0.5,    # mass of magnet [kg]
             'grav':         9.81,
         }
@@ -153,7 +154,8 @@ class MagLev(System):
     def _nonlinear(self, z):
         k0 = 0.1
         k1 = 1.262
-        y = k0 + k1/(z + 2.)
+        #y = k0 + k1/(z + 2.)
+        y =  2.5/(z + 0.01)
         return y
     
     def deriv(self, t, x, u):
@@ -168,7 +170,8 @@ class MagLev(System):
 
         x_dot = np.zeros((2, ))
         x_dot[0] = v
-        x_dot[1] = 1/mass * (-y * (u + Im) + mass*grav)
+        x_dot[1] = 1/mass * (-y * (u + Im) + mass * grav)
+        #print(f"z = {z:5.4f}, x_dot[0]  = {x_dot[0]:5.4f}, x_dot[1]  = {x_dot[1]:5.4f}, y = {y:5.4f}, u = {u:5.4f}")
         return x_dot
 
 class Bicopter(System):
@@ -525,7 +528,7 @@ def controller(system):
                 raise ValueError(f"Disturbance {disturbance} not allowed")
         elif msg == 'reset':
             system.state = system.init_state()
-            system.u = 0.0
+            #system.u = 0.0
         if msg == 'close':
             conn.close()
             break
@@ -543,6 +546,10 @@ if __name__ == '__main__':
         raise ValueError('Please provide the kind of system [bob, maglev, bicopter, ship]')
     system_type = sys.argv[1]
     print(f"System type: {system_type}")
+    if len(sys.argv) > 2:
+        if sys.argv[2] == 'no_noise':
+            ADD_NOISE = False
+            print(f"No noise")
     u = 0.0
     step_size = 0.01
 
