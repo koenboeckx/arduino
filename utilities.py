@@ -8,6 +8,7 @@ modes = {
     'CLASSICAL':    1,
     'STATE_SPACE':  2,
     'EXTENDED':     3,
+    'TEST':         4,
 }
 
 class Params: # global object for comms between threads
@@ -114,6 +115,8 @@ def matlab_comms(controller, params):
                         params.mode = 'STATE_SPACE'
                     elif mode ==  modes['EXTENDED']:
                         params.mode = 'EXTENDED'
+                    elif mode ==  modes['TEST']:
+                        params.mode = 'TEST'                        
                     if n_params > 0:
                         parameters = []
                         for _ in range(n_params):
