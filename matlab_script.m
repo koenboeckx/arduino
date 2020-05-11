@@ -2,7 +2,7 @@
 arduino = tcpclient('localhost', 6020, 'Timeout', 60);
 
 %% define parameters and modes
-T_sample = 0.01;
+T_sample = 0.05;
 n_samples = 200;
 ts = (0:n_samples-1)*T_sample;
 
