@@ -41,7 +41,7 @@ class System:
         k2 = h * self.deriv(t + h/2, state + k1/2, u)
         k3 = h * self.deriv(t + h/2, state + k2/2, u)
         k4 = h * self.deriv(t, state + k3, u)
-        return 1/6*(k1 + k2 + k3 + k4)
+        return 1/6*(k1 + 2*k2 +2* k3 + k4)
 
     def init_state(self):
         raise NotImplementedError
