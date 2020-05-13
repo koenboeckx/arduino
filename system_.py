@@ -36,12 +36,11 @@ class System:
 
     def _rk4(self, t, state, u):
         """Implements Runge-Kutta-4 integration scheme"""
-        
         h = self.T
         k1 = h * self.deriv(t, state, u)
         k2 = h * self.deriv(t + h/2, state + k1/2, u)
         k3 = h * self.deriv(t + h/2, state + k2/2, u)
-        k4 = h * self.deriv(t, state + k3, u)
+        k4 = h * self.deriv(t + h, state + k3, u)
         return 1/6*(k1 + 2*k2 + 2*k3 + k4)
 
     def init_state(self):

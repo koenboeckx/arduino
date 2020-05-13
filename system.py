@@ -41,7 +41,7 @@ class System:
         k2 = h * self.deriv(t + h/2, state + k1/2, u)
         k3 = h * self.deriv(t + h/2, state + k2/2, u)
         k4 = h * self.deriv(t + h, state + k3, u)
-        return 1/6*(k1 + 2*k2 +2*k3 + k4)
+        return 1/6*(k1 + 2*k2 + 2*k3 + k4)
 
     def init_state(self):
         raise NotImplementedError
@@ -543,6 +543,10 @@ if __name__ == '__main__':
         raise ValueError('Please provide the kind of system [bob, maglev, bicopter, ship]')
     system_type = sys.argv[1]
     print(f"System type: {system_type}")
+    if len(sys.argv) > 2:
+        if sys.argv[2] == 'no_noise':
+            ADD_NOISE = False
+            print(f"No noise")
     u = 0.0
     step_size = 0.01
 

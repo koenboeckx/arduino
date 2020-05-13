@@ -2,7 +2,6 @@
 .vscode/c_cpp_properties.json
 .vscode/arduino.json
 matlab_script.m~
-solutions/*
 __pycache__/*
 matlab_tools/*.m~
 students/*
