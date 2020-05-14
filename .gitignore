@@ -5,3 +5,5 @@ matlab_script.m~
 __pycache__/*
 matlab_tools/*.m~
 students/*
+solutions/*
+solutions/maglev2.m

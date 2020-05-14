@@ -171,6 +171,24 @@ class MagLev(System):
         x_dot[1] = 1/mass * (-y * (u + Im) + mass*grav)
         return x_dot
 
+class MagLev2(MagLev):
+    def __init__(self, T):
+        super().__init__(T)
+        self.params = {    
+            'Z_min':        0.0,    # minimum position [cm]
+            'Z_max':        10.0,   # maximum position [cm]
+            'I_min':        0.0,    # minimum input current [A] 
+            'I_max':        30.0,  # maximum input current [A]
+            'imag_current': 0.0,    # current that represents static magnet [A]
+            'mass':         0.5,    # mass of magnet [kg]
+            'grav':         9.81,
+        }
+        self.disturbance = 0.0
+    
+    def _nonlinear(self, z):
+        y =  2.5/(z + 1.0)
+        return y
+
 class Bicopter(System):
     def __init__(self, T):
         super().__init__(T)
@@ -555,6 +573,9 @@ if __name__ == '__main__':
         graph = BoBGraph(system)
     elif system_type == 'maglev':
         system = MagLev(T=step_size)
+        graph = MagLevGraph(system)
+    elif system_type == 'maglev2':
+        system = MagLev2(T=step_size)
         graph = MagLevGraph(system)
     elif system_type == 'bicopter':
         system = Bicopter(T=step_size)
