@@ -1,5 +1,0 @@
-{
-    "board": "arduino:avr:uno",
-    "sketch": "quadcopter_sim.ino",
-    "port": "/dev/ttyUSB0"
-}
