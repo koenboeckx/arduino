@@ -18,7 +18,7 @@ Instruction videos:
 1. Start the system simulator: `python3 system.py [bob|ship|maglev|bicopter]`.
 Specifying the type of system to simulate is mandatory.
 1. Start, in a new command window, the controller which implements the communication with the simulated system and matlab: `python3 controller.py [tcp_port]`. 
-Students should only adapt the class `Controller`. This class takes the measurement `y` and produces the system input `u`. `Controller` returns a tuple with two elements:
+Students should only adapt the classes `Controller` and `Observer`. The `Controller` class takes the measurement `y` and produces the system input `u`. `Controller` returns a tuple with two elements:
     1. The command `u` that will be send to the system;
     1. A list of items that will be returned to Matlab, e.g. the list `[y, u]`
 1. add the folder `matlab_tools` to the matlab path and run the matlab script:
@@ -44,6 +44,7 @@ Two rotors attached to the ends of pole that can rotate around its axis. It make
 
 ### Ship
 A ship lying in a bassin of water. The mass at the end of a pole if mounted on top of the ship and can rotate (angle `phi`) around a vertical axis to steer the behavior of the ship around its axis (angle `theta`).
+[Ship](pictures/ship.jpg)
 * state vars = [`theta`, `omega`]
 * limits on state: -1.0 < `theta` < 1.0
 * init_state = [0.0, 0.0] - in radians and radians/sec
