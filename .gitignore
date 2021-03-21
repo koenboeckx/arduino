@@ -5,9 +5,6 @@ matlab_script.m~
 __pycache__/*
 matlab_tools/*.m~
 students/*
-<<<<<<< HEAD
-maglev2_controller.py
-=======
 solutions_/*
->>>>>>> 2f2157bd33cab82ebbfc743666e3ea694cdd562b
-solutions/
+maglev2_controller.py
+maglev2.m
