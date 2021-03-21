@@ -13,6 +13,12 @@ class Controller:
         self.k    = parameters[0]
 
     def __call__(self, y):
+        """Call controller with measurement y
+        This method is called by the system.System class
+        Returns:
+            u (float): the command signal for the system
+            l (list): a list of values that is returned to matlab
+        """
         if params.mode == 'OPEN_LOOP':
             u = params.w
         elif params.mode == 'CLASSICAL':
@@ -26,6 +32,14 @@ class Controller:
             u = 0.0
         #print(f"y = {y:5.3f}, e = {error:5.3f}, u = {u:5.3f}")
         return u, [u, y]
+
+class Observer:
+    "Implement your observer"
+    def __init__(self):
+        pass
+    def __call__(self, u, y):
+        "Call observer with this method; Inputs: command u and measurement y"
+        pass
 
 #### ------ don't change anything below ----------- ####
 
