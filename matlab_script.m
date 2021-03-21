@@ -1,5 +1,5 @@
 %% define parameters and create tcp/ip object
-arduino = tcpclient('localhost', 6012, 'Timeout', 60);
+arduino = tcpclient('localhost', 6014, 'Timeout', 60);
 
 %% define parameters and modes
 T_sample = 0.05;
@@ -14,22 +14,21 @@ EXTENDED    = 3;
 
 %%
 mode = OPEN_LOOP;
-w = -0.1;
+w = -1.0;
 set_mode_params(arduino, mode, w, [])
 input('press enter')
 
-w = 0.1
+w = 1.0
 Y = get_response(arduino, w, n_samples)
 
 %%
-u = Y(1, :)
-y = Y(2, :)
+u = Y(1,:), y = Y(2,:)
 figure; plot(ts, y); title("y"); xlabel('t')
 figure; plot(ts, u); title("u"); xlabel('t')
 
 %% Estimate parameters
 
-p = polyfit(ts(1:80), y(1:80), 2);
+p = polyfit(ts(1:43), y(1:43), 2);
 x_fit = polyval(p, ts);
 
 figure; hold on;
@@ -38,12 +37,13 @@ plot(ts, y, ts, x_fit);
 %%
 mode = CLASSICAL;
 w = 0.0;
-set_mode_params(arduino, mode, w, [-2.]);
+set_mode_params(arduino, mode, w, [2.]);
 
 input('press enter')
 
 w = 0.1
-[y, u] = get_response(arduino, w, n_samples)
+Y = get_response(arduino, w, n_samples)
+u = Y(1,:), y = Y(2,:);
 figure; plot(ts, y); title("y");
 figure; plot(ts, u); title("u");
 
