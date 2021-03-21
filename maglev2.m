@@ -1,4 +1,4 @@
-%% define parameters and create tcp/ip object
+%%  define parameters and create tcp/ip object
 arduino = tcpclient('localhost', 6012, 'Timeout', 60);
 
 %% define parameters and modes
