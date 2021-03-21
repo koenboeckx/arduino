@@ -6,5 +6,6 @@ __pycache__/*
 matlab_tools/*.m~
 students/*
 solutions/*
+temp/*
 maglev2_controller.py
 maglev2.m
