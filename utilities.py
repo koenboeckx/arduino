@@ -11,6 +11,8 @@ modes = {
     'TEST':         4,
 }
 
+LOCALHOST = '127.0.0.1'
+
 class Params: # global object for comms between threads
     n_samples = 0
     Ts = 0.05
@@ -37,7 +39,7 @@ def set_disturbance(conn, disturbance):
     conn.send(disturbance)
 
 def system_comms(controller, params):
-    address = ('localhost', 6000)
+    address = (LOCALHOST, 6000)
     with Client(address, authkey=b'secret') as conn:
         params.system_conn = conn
         while True:
@@ -77,7 +79,7 @@ def read_int(conn):
 def matlab_comms(controller, params):
     # Create a TCP/IP socket
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_address = ('localhost', params.ip)
+    server_address = (LOCALHOST, params.ip)
     sock.bind(server_address)
     sock.listen(1)
 

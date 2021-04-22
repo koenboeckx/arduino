@@ -8,5 +8,6 @@ students/*
 solutions/*
 solutions_/*
 temp/*
+tmp/
 maglev2_controller.py
 maglev2.m
