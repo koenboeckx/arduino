@@ -10,3 +10,5 @@ solutions_/*
 temp/*
 maglev2_controller.py
 maglev2.m
+tmp/
+src/__pycache__/
