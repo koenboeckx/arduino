@@ -16,7 +16,8 @@ Instruction videos:
 1. Download the files, either with `git clone` (preferred) or by downloading all the files in zip format (choose `Clone or download` in the top right corner).
 1. Unzip the files (if needed). Open a command window and `cd` into the newly created directory.
 1. Start the system simulator: `python3 system.py [bob|ship|maglev|bicopter]`.
-Specifying the type of system to simulate is mandatory.
+Specifying the type of system to simulate is mandatory.   
+(Measurement noise is activated by default. You can deactivate it by adding the `no_noise` keyword.)
 1. Start, in a new command window, the controller which implements the communication with the simulated system and matlab: `python3 controller.py [tcp_port]`. 
 Students should only adapt the classes `Controller` and `Observer`. The `Controller` class takes the measurement `y` and produces the system input `u`. It returns a tuple with two elements:
     1. The command `u` that will be send to the system;

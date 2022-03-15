@@ -73,7 +73,7 @@ class ShipGraph:
     Shows the movement of the ship
     """
 
-    def __init__(self, params):
+    def __init__(self, system):
         self.system = system
         self.sampling_period = system.T
         self.L = 2.0

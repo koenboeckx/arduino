@@ -4,7 +4,7 @@ plt.switch_backend("TkAgg")
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 
-from utilities import System, ADD_NOISE
+from .utilities import System, ADD_NOISE
 
 class MagLev(System):
     def __init__(self, T):

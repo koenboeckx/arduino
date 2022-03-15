@@ -11,7 +11,7 @@ plt.switch_backend("TkAgg")
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 
-ADD_NOISE = False
+ADD_NOISE = True
 
 def counter():
     i = 0
@@ -96,7 +96,7 @@ if __name__ == '__main__':
         from src.ship import Ship, ShipGraph
         system = Ship(T=step_size)
         graph = ShipGraph(system)
-    elif system_type == 'pendulum':
+    elif system_type == '   ':
         from src.pendulum import Pendulum, PendulumGraph
         system = Pendulum(T=step_size, add_noise=ADD_NOISE)
         graph = PendulumGraph(system)

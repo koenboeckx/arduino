@@ -4,7 +4,7 @@ plt.switch_backend("TkAgg")
 import matplotlib.patches as patches
 import matplotlib.animation as animation
 
-from utilities import System, ADD_NOISE
+from .utilities import System, ADD_NOISE
 
 class Bicopter(System):
     def __init__(self, T):
@@ -15,7 +15,7 @@ class Bicopter(System):
             'max_theta':     10/180 * np.pi,    # max allowed plane inclination = 10°
             'mass':          15,                # mass of beam
             'length':        1.2,               # length of beam
-            'K':             5.0,             # motor coeff
+            'K':             5.0,               # motor coeff
         }
     
     def init_state(self):

@@ -1,4 +1,4 @@
-ADD_NOISE = False
+ADD_NOISE = True
 
 class System:
     def __init__(self, T):
