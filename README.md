@@ -35,7 +35,6 @@ Students should only adapt the classes `Controller` and `Observer`. The `Control
 ## Specific instructions
 All parameters of the systems can be found in the `.params` dictionary of each `System` object in `system.py`.
 
-Measurement noise can be activated/deactivated by setting the `ADD_NOISE` flag to `True/False` in `system.py`
 ### Bicopter
 Two rotors are attached to the ends of pole that can rotate around its axis. It makes an angle `theta` with the horizontal.
 
