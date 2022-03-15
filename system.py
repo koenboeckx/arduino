@@ -12,6 +12,7 @@ import matplotlib.patches as patches
 import matplotlib.animation as animation
 
 ADD_NOISE = True
+LOCALHOST = '127.0.0.1'
 
 def counter():
     i = 0
@@ -26,7 +27,7 @@ def stepper(system):
         #print(system.get_state())
 
 def controller(system):
-    address = ('localhost', 6000)
+    address = (LOCALHOST, 6000)
     listener = Listener(address,
                         authkey=b'secret')
     conn = listener.accept()
