@@ -28,7 +28,7 @@ class Ship(System):
     
     def get_measurement(self):
         measurement = self.state[0]
-        if ADD_NOISE:
+        if self.add_noise:
             measurement += np.random.normal(scale=0.01)
         return measurement
     

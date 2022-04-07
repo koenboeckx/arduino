@@ -21,7 +21,7 @@ class BallOnBeam(System):
     
     def get_measurement(self):
         measurement = self.state[0] * np.cos(self.u)
-        if ADD_NOISE:
+        self.add_noise:
             measurement += np.random.normal(scale=self.params['L']/50)
         return measurement
     

@@ -26,7 +26,7 @@ class MagLev(System):
     def get_measurement(self):
         height = self.params['Z_max'] - self.params['Z_min']
         measurement = self.state[0]
-        if ADD_NOISE:
+        self.add_noise:
             measurement += np.random.normal(scale=height/50)
         return measurement
     
