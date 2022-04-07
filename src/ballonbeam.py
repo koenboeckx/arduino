@@ -7,8 +7,8 @@ import matplotlib.animation as animation
 from .utilities import System, ADD_NOISE
 
 class BallOnBeam(System):
-    def __init__(self, T):
-        super().__init__(T)
+    def __init__(self, T, add_noise=False):
+        super().__init__(T, add_noise)
         self.params = {
             'L':            1.0,            # beam length from -L to L
             'radius':       0.1,            # radius of ball   

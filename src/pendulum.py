@@ -13,7 +13,7 @@ class Pendulum(System):
     https://ctms.engin.umich.edu/CTMS/index.php?example=InvertedPendulum&section=SystemModeling
     """
     def __init__(self, T, add_noise=False):
-        super().__init__(T)
+        super().__init__(T, add_noise)
         self.params = {
             'L':            0.3,            # pendulum length (m)
             'M':            0.5,            # mass of cart (kg)

@@ -7,8 +7,8 @@ import matplotlib.animation as animation
 from .utilities import System, ADD_NOISE
 
 class Bicopter(System):
-    def __init__(self, T):
-        super().__init__(T)
+    def __init__(self, T, add_noise=False):
+        super().__init__(T, add_noise)
         self.params = {
             'V_min':        -10.0,              # minimim input voltage
             'V_max':         10.0,              # maximum input voltage
@@ -23,7 +23,7 @@ class Bicopter(System):
     
     def get_measurement(self):
         measurement = self.state[0]
-        if ADD_NOISE:
+        if self.add_noise:
             measurement += np.random.normal(scale=0.01)
         return measurement
     

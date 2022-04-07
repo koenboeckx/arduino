@@ -9,8 +9,8 @@ from .utilities import System, ADD_NOISE
 
 
 class Ship(System):
-    def __init__(self, T):
-        super().__init__(T)
+    def __init__(self, T, add_noise=False):
+        super().__init__(T, add_noise)
         self.params = {
             'K':         1.4067,    # K = g*d - G*h [Nm] - see accompanying document
             'l':         0.15,      # length of the arm [m]

@@ -1,13 +1,14 @@
 ADD_NOISE = True
 
 class System:
-    def __init__(self, T):
+    def __init__(self, T, add_noise):
         self.T = T # sampling period / step size
         self.t = 0 # time
         self.state = self.init_state()
         self.u = 0.0 # keep track of last given command
         self.params = {} # container for system parameters
         self.disturbance = 0.0 # use depends on application
+        self.add_noise = add_noise
     
     def get_state(self):
         return self.state[0], self.state[1]

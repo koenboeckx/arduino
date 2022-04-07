@@ -7,8 +7,8 @@ import matplotlib.animation as animation
 from .utilities import System, ADD_NOISE
 
 class MagLev(System):
-    def __init__(self, T):
-        super().__init__(T)
+    def __init__(self, T, add_noise=False):
+        super().__init__(T, add_noise)
         self.params = {    
             'Z_min':        0.0,    # minimum position [cm]
             'Z_max':        10.0,   # maximum position [cm]
