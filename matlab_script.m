@@ -1,5 +1,5 @@
 %% define parameters and create tcp/ip object
-arduino = tcpclient('127.0.0.1', 6011, 'Timeout', 60);
+arduino = tcpclient('127.0.0.1', 6012, 'Timeout', 60);
 
 %% define parameters and modes
 T_sample = 0.05;
