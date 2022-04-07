@@ -83,19 +83,19 @@ if __name__ == '__main__':
 
     if system_type == 'bob':
         from src.ballonbeam import BallOnBeam, BoBGraph
-        system = BallOnBeam(T=step_size)
+        system = BallOnBeam(T=step_size, add_noise=ADD_NOISE)
         graph = BoBGraph(system)
     elif system_type == 'maglev':
         from src.maglev import MagLev2, MagLevGraph
-        system = MagLev2(T=step_size)
+        system = MagLev2(T=step_size, add_noise=ADD_NOISE)
         graph = MagLevGraph(system)
     elif system_type == 'bicopter':
         from src.bicopter import Bicopter, BicopterGraph
-        system = Bicopter(T=step_size)
+        system = Bicopter(T=step_size, add_noise=ADD_NOISE)
         graph = BicopterGraph(system)
     elif system_type == 'ship':
         from src.ship import Ship, ShipGraph
-        system = Ship(T=step_size)
+        system = Ship(T=step_size, add_noise=ADD_NOISE)
         graph = ShipGraph(system)
     elif system_type == 'pendulum':
         from src.pendulum import Pendulum, PendulumGraph
