@@ -9,9 +9,7 @@ from .utilities import System
 DAMP_COEFF = 0 #0.5
 
 class Pendulum(System):
-    """ 
-    https://ctms.engin.umich.edu/CTMS/index.php?example=InvertedPendulum&section=SystemModeling
-    """
+
     def __init__(self, T, add_noise=False):
         super().__init__(T, add_noise)
         self.params = {
@@ -33,7 +31,15 @@ class Pendulum(System):
         if self.add_noise:
             measurement[0] += np.random.normal(scale=0.01)
             measurement[1] += np.random.normal(scale=0.005)
+        if abs(measurement[1]) > np.pi: # 
+            measurement[1] = measurement[1]-np.sign(measurement[1])*2*np.pi
         return measurement
+
+    def get_measurement_exact(self):
+        "returns all state information"
+        if abs(self.state[2]) > np.pi:
+            self.state[2] = self.state[2]-np.sign(self.state[2])*2*np.pi
+        return self.state
     
     def _constrain_input(self, u):
         max_F = self.params['max_F']
@@ -78,9 +84,15 @@ class Pendulum(System):
         N = I*(M+m) + M*m*L**2
         x_dot = np.zeros((4, ))
         x_dot[0] = x[1]
-        x_dot[1] = (-(I+m*L**2)*b*x[1] + m**2*g*L**2 * x[2] + (I+m*L**2)*u)/N
+        
+        #x_dot[1] = (-(I+m*L**2)*b*x[1] + m**2*g*L**2 * x[2] + (I+m*L**2)*u)/N #Lineair systeem => Geen realistisch model
+        x_dot[1] = (u+m*L*x[3]*np.sin(np.pi+x[2])-b*x[1]+m**2*L**2*g*np.sin(np.pi+x[2]))/(M+m-m**2*L**2*np.cos(np.pi+x[2])/(I+m*L**2))
+        
         x_dot[2] = x[3]
-        x_dot[3] = (-m*L*b * x[1] + m*g*L*(M+m) * x[2] + m*L*u)/N
+        
+        #x_dot[3] = (-m*L*b * x[1] + m*g*L*(M+m) * x[2] + m*L*u)/N #Lineair systeem => Geen realistisch model
+        x_dot[3] = (u-b*x[1]+m*L*x[3]**2*np.sin(np.pi+x[2])+m*g*L*np.sin(np.pi+x[2])*(m+M)/(m*L*np.cos(np.pi+x[2])))/((m+M)*(I+m*L**2)/(-m*L*np.cos(np.pi+x[2]))+m*L*np.cos(np.pi+x[2]))
+
         return x_dot
     
     def get_state(self):

@@ -92,8 +92,7 @@ A small iron ball is put inside a magnetic field. The strength of this magnetic 
 * limits on input: 0.0 < `I` < 20.0
 * disturbance: the `set_disturbance` function here limits the minimum value of `z`. This is needed to do the identification and parameter estimation of the system.
 
-## Inverted Pendulum
-**This project is still experimental. **  
+## Inverted Pendulum  
 The classic inverted pendulum, where you must move a cart to keep the pendulum in a vertical position.
 
 <img src="pictures/invertedpendulum.jpg" alt="drawing" height="400"/>
