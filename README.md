@@ -15,7 +15,7 @@ Instruction videos:
 ## General instructions:
 1. Download the files, either with `git clone` (preferred) or by downloading all the files in zip format (choose `Clone or download` in the top right corner).
 1. Unzip the files (if needed). Open a command window and `cd` into the newly created directory.
-1. Start the system simulator: `python3 system.py [bob|ship|maglev|bicopter]`.
+1. Start the system simulator: `python3 system.py [bob|ship|maglev|bicopter|pendulum]`.
 Specifying the type of system to simulate is mandatory.   
 (Measurement noise is activated by default. You can deactivate it by adding the `no_noise` keyword.)
 1. Start, in a new command window, the controller which implements the communication with the simulated system and matlab: `python3 controller.py [tcp_port]`. 
@@ -102,3 +102,4 @@ The classic inverted pendulum, where you must move a cart to keep the pendulum i
 * init_state = [0.0, 0.0, 0.0, 0.0]
 * input = a force `F` [N] applied to the cart
 * limits on input: -10 < `F` < 10
+* !! Pendulum returns two measurements: postion of the cart `x` and angle `theta`, so `y` is a list
